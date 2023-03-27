@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Soenneker.Enums.JsonLibrary;
+using Soenneker.Enums.JsonOptions;
+using Soenneker.Json.OptionsCollection;
 using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.Json.Abstract;
-using Soenneker.Utils.Json.Enums;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Soenneker.Utils.Json;
@@ -24,42 +27,54 @@ public class JsonUtil : IJsonUtil
         _fileUtil = fileUtil;
     }
 
-    public T? Deserialize<T>(string str, JsonLibraryType? libraryType = null)
+    /// <summary>
+    /// Uses WebOptions as default
+    /// </summary>
+    [Pure]
+    public static T? Deserialize<T>(string str, JsonLibraryType? libraryType = null)
     {
         T? obj;
 
         if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
-            obj = JsonSerializer.Deserialize<T>(str, JsonOptionsLibrary.WebOptions);
+            obj = JsonSerializer.Deserialize<T>(str, JsonOptionsCollection.WebOptions);
         else
-            obj = JsonConvert.DeserializeObject<T>(str, JsonOptionsLibrary.Newtonsoft);
+            obj = JsonConvert.DeserializeObject<T>(str, JsonOptionsCollection.Newtonsoft);
 
         return obj;
     }
 
-    public object? Deserialize(string str, Type type, JsonLibraryType? libraryType = null)
+    /// <summary>
+    /// Uses WebOptions as default
+    /// </summary>
+    [Pure]
+    public static object? Deserialize(string str, Type type, JsonLibraryType? libraryType = null)
     {
         object? obj;
 
         if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
-            obj = JsonSerializer.Deserialize(str, type, JsonOptionsLibrary.WebOptions);
+            obj = JsonSerializer.Deserialize(str, type, JsonOptionsCollection.WebOptions);
         else
-            obj = JsonConvert.DeserializeObject(str, JsonOptionsLibrary.Newtonsoft);
+            obj = JsonConvert.DeserializeObject(str, JsonOptionsCollection.Newtonsoft);
 
         return obj;
     }
 
-    public string? Serialize(object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
+    /// <summary>
+    /// Accepts a nullable object... if null returns null. If type is left null, will use WebOptions
+    /// </summary>
+    [Pure]
+    public static string? Serialize(object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
     {
         if (obj is null)
             return null;
 
-        JsonSerializerOptions options = JsonOptionsLibrary.GetOptionsFromType(optionType);
+        JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
 
         string str;
         if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
             str = JsonSerializer.Serialize(obj, options);
         else
-            str = JsonConvert.SerializeObject(obj, JsonOptionsLibrary.Newtonsoft);
+            str = JsonConvert.SerializeObject(obj, JsonOptionsCollection.Newtonsoft);
 
         return str;
     }
