@@ -14,7 +14,7 @@ public interface IJsonUtil
     [Pure]
     ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null);
 
-    ValueTask SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null);
+    Task SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null);
 
     [Pure]
     bool IsJsonValid(string str);

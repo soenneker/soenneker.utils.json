@@ -86,14 +86,14 @@ public class JsonUtil : IJsonUtil
         return result;
     }
 
-    public async ValueTask SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
+    public Task SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
     {
         if (obj is null)
-            return;
+            return Task.CompletedTask;
 
         string content = Serialize(obj, optionType, libraryType)!;
 
-        await _fileUtil.WriteFile(path, content);
+        return _fileUtil.WriteFile(path, content);
     }
 
     public bool IsJsonValid(string str)
