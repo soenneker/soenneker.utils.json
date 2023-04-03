@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -47,6 +48,22 @@ public class JsonUtil : IJsonUtil
     /// Uses WebOptions as default
     /// </summary>
     [Pure]
+    public static T? Deserialize<T>(Stream stream, JsonLibraryType? libraryType = null)
+    {
+        T? obj;
+
+        if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
+            obj = JsonSerializer.Deserialize<T>(stream, JsonOptionsCollection.WebOptions);
+        else
+            obj = DeserializeViaNewtonsoft<T>(stream, JsonOptionsCollection.Newtonsoft);
+
+        return obj;
+    }
+
+    /// <summary>
+    /// Uses WebOptions as default
+    /// </summary>
+    [Pure]
     public static object? Deserialize(string str, Type type, JsonLibraryType? libraryType = null)
     {
         object? obj;
@@ -55,6 +72,22 @@ public class JsonUtil : IJsonUtil
             obj = JsonSerializer.Deserialize(str, type, JsonOptionsCollection.WebOptions);
         else
             obj = JsonConvert.DeserializeObject(str, JsonOptionsCollection.Newtonsoft);
+
+        return obj;
+    }
+
+    /// <summary>
+    /// Uses WebOptions as default
+    /// </summary>
+    [Pure]
+    public static object? Deserialize(Stream stream, Type type, JsonLibraryType? libraryType = null)
+    {
+        object? obj;
+
+        if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
+            obj = JsonSerializer.Deserialize(stream, type, JsonOptionsCollection.WebOptions);
+        else
+            obj = DeserializeViaNewtonsoft(stream, JsonOptionsCollection.Newtonsoft);
 
         return obj;
     }
@@ -78,7 +111,24 @@ public class JsonUtil : IJsonUtil
 
         return str;
     }
-    
+
+    [Pure]
+    public static string? Serialize(Stream stream, object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
+    {
+        if (obj is null)
+            return null;
+
+        JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
+
+        string str;
+        if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
+            str = JsonSerializer.Serialize(stream, options);
+        else
+            str = JsonConvert.SerializeObject(obj, JsonOptionsCollection.Newtonsoft);
+
+        return str;
+    }
+
     public async ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null)
     {
         string content = await _fileUtil.ReadFile(path);
@@ -116,5 +166,29 @@ public class JsonUtil : IJsonUtil
         document?.Dispose();
 
         return result;
+    }
+
+    private static void SerializeViaNewtonsoft(object value, Stream stream, JsonSerializerSettings? jsonSerializerSettings)
+    {
+        using var writer = new StreamWriter(stream);
+        using var jsonWriter = new JsonTextWriter(writer);
+        var serializer = Newtonsoft.Json.JsonSerializer.Create(jsonSerializerSettings);
+        serializer.Serialize(jsonWriter, value);
+    }
+
+    private static T? DeserializeViaNewtonsoft<T>(Stream stream, JsonSerializerSettings? jsonSerializerSettings)
+    {
+        using var reader = new StreamReader(stream);
+        using var jsonReader = new JsonTextReader(reader);
+        var serializer = Newtonsoft.Json.JsonSerializer.Create(jsonSerializerSettings);
+        return serializer.Deserialize<T>(jsonReader);
+    }
+
+    private static object? DeserializeViaNewtonsoft(Stream stream, JsonSerializerSettings? jsonSerializerSettings)
+    {
+        using var reader = new StreamReader(stream);
+        using var jsonReader = new JsonTextReader(reader);
+        var serializer = Newtonsoft.Json.JsonSerializer.Create(jsonSerializerSettings);
+        return serializer.Deserialize<object?>(jsonReader);
     }
 }

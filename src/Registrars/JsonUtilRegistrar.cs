@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Soenneker.Utils.File.Registrars;
 using Soenneker.Utils.Json.Abstract;
+using System.IO;
 
 namespace Soenneker.Utils.Json.Registrars;
 
