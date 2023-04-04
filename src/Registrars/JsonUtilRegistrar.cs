@@ -2,14 +2,17 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Soenneker.Utils.File.Registrars;
 using Soenneker.Utils.Json.Abstract;
-using System.IO;
+using Soenneker.Utils.File.Abstract;
 
 namespace Soenneker.Utils.Json.Registrars;
 
+/// <summary>
+///  A utility library handling (de)serialization and other useful JSON functions
+/// </summary>
 public static class JsonUtilRegistrar
 {
     /// <summary>
-    /// Adds IJsonUtil as a scoped service. Also adds IFileUtil as Scoped (if it's not currently registered).<para/>
+    /// Adds <see cref="IJsonUtil"/> as a scoped service. Also adds <see cref="IFileUtil"/> as Scoped (if it's not currently registered).<para/>
     /// Shorthand for <code>services.TryAddScoped</code> <para/>
     /// </summary>
     public static void AddJsonUtilAsScoped(this IServiceCollection services)
@@ -19,7 +22,7 @@ public static class JsonUtilRegistrar
     }
 
     /// <summary>
-    /// Adds IJsonUtil as a singleton service. (Recommended). Also adds IFileUtil as a Singleton (if it's not currently registered).<para/>
+    /// Adds <see cref="IJsonUtil"/> as a singleton service. (Recommended). Also adds <see cref="IFileUtil"/> as a Singleton (if it's not currently registered).<para/>
     /// Shorthand for <code>services.TryAddSingleton</code> <para/>
     /// </summary>
     public static void AddJsonUtilAsSingleton(this IServiceCollection services)
