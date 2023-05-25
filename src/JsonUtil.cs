@@ -61,6 +61,17 @@ public class JsonUtil : IJsonUtil
     }
 
     /// <summary>
+    /// Uses WebOptions as default. Only uses System.Text.Json
+    /// </summary>
+    [Pure]
+    public static T? Deserialize<T>(Span<byte> byteSpan)
+    {
+        var obj = JsonSerializer.Deserialize<T>(byteSpan, JsonOptionsCollection.WebOptions);
+
+        return obj;
+    }
+
+    /// <summary>
     /// Uses WebOptions as default
     /// </summary>
     [Pure]
