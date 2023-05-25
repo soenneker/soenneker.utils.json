@@ -123,6 +123,9 @@ public class JsonUtil : IJsonUtil
         return str;
     }
 
+    /// <summary>
+    /// Serializes the stream input
+    /// </summary>
     [Pure]
     public static string? Serialize(Stream stream, object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
     {
@@ -138,6 +141,16 @@ public class JsonUtil : IJsonUtil
             str = JsonConvert.SerializeObject(obj, JsonOptionsCollection.Newtonsoft);
 
         return str;
+    }
+
+    /// <summary>
+    /// Serializes the object into the given stream
+    /// </summary>
+    public static void SerializeIntoStream(Stream stream, object? obj, JsonOptionType? optionType = null)
+    {
+        JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
+
+        JsonSerializer.SerializeAsync(stream, obj, options);
     }
 
     public async ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null)
