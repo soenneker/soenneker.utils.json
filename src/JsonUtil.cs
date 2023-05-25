@@ -146,11 +146,11 @@ public class JsonUtil : IJsonUtil
     /// <summary>
     /// Serializes the object into the given stream
     /// </summary>
-    public static void SerializeIntoStream(Stream stream, object? obj, JsonOptionType? optionType = null)
+    public static Task SerializeIntoStream(Stream stream, object? obj, JsonOptionType? optionType = null)
     {
         JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
 
-        JsonSerializer.SerializeAsync(stream, obj, options);
+        return JsonSerializer.SerializeAsync(stream, obj, options);
     }
 
     public async ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null)
