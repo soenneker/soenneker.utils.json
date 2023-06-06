@@ -215,4 +215,12 @@ public class JsonUtil : IJsonUtil
         var serializer = Newtonsoft.Json.JsonSerializer.Create(jsonSerializerSettings);
         return serializer.Deserialize<object?>(jsonReader);
     }
+
+    public static string Format(string json)
+    {
+        using (JsonDocument jDoc = JsonDocument.Parse(json))
+        {
+            return JsonSerializer.Serialize(jDoc, new JsonSerializerOptions { WriteIndented = true });
+        }
+    }
 }
