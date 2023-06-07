@@ -8,7 +8,7 @@ public class JsonUtilTests
     [Fact]
     public void Format_should_indent()
     {
-        var str = "{ \"Test\": \"1\"}";
+        const string str = "{ \"Test\": \"1\"}";
         string result = JsonUtil.Format(str, true);
         result.Should().Be("{\r\n  \"Test\": \"1\"\r\n}");
     }
