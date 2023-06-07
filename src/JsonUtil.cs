@@ -216,11 +216,19 @@ public class JsonUtil : IJsonUtil
         return serializer.Deserialize<object?>(jsonReader);
     }
 
-    public static string Format(string json)
+    public static string Format(string json, bool forceWindowsLineEndings)
     {
         using (JsonDocument jDoc = JsonDocument.Parse(json))
         {
-            return JsonSerializer.Serialize(jDoc, new JsonSerializerOptions { WriteIndented = true });
+            string result = JsonSerializer.Serialize(jDoc, new JsonSerializerOptions { WriteIndented = true });
+
+            if (OperatingSystem.IsWindows())
+                return result;
+
+            if (forceWindowsLineEndings)
+                result = result.Replace(Environment.NewLine, "\r\n");
+
+            return result;
         }
     }
 }
