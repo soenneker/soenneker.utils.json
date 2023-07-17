@@ -37,7 +37,7 @@
         <None Include="..\LICENSE" Pack="true" PackagePath="\" />
         <None Include="..\icon.png" Pack="true" PackagePath="\" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-        <PackageReference Include="Soenneker.Enums.JsonLibrary" Version="1.0.40" />
+        <PackageReference Include="Soenneker.Enums.JsonLibrary" Version="1.0.41" />
         <PackageReference Include="Soenneker.Json.OptionsCollection" Version="1.0.69" />
         <PackageReference Include="Soenneker.Utils.File" Version="1.0.134" />
     </ItemGroup>
