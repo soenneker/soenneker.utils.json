@@ -39,6 +39,6 @@
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
         <PackageReference Include="Soenneker.Enums.JsonLibrary" Version="1.0.69" />
         <PackageReference Include="Soenneker.Json.OptionsCollection" Version="1.0.125" />
-        <PackageReference Include="Soenneker.Utils.File" Version="1.0.230" />
+        <PackageReference Include="Soenneker.Utils.File" Version="1.0.232" />
     </ItemGroup>
 </Project>
