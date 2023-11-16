@@ -9,7 +9,7 @@
 
     <PropertyGroup>
         <Description>A utility library handling (de)serialization and other useful JSON functions</Description>
-        <Version Condition="'$(BUILD_VERSION)' == ''">2.0.0</Version>
+        <Version Condition="'$(BUILD_VERSION)' == ''">2.1.0</Version>
         <Version Condition="'$(BUILD_VERSION)' != ''">$(BUILD_VERSION)</Version>
         <AssemblyName>Soenneker.Utils.Json</AssemblyName>
         <PackageId>Soenneker.Utils.Json</PackageId>
@@ -36,9 +36,9 @@
         <None Include="..\README.md" Pack="true" PackagePath="\" />
         <None Include="..\LICENSE" Pack="true" PackagePath="\" />
         <None Include="..\icon.png" Pack="true" PackagePath="\" />
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
         <PackageReference Include="Soenneker.Enums.JsonLibrary" Version="1.0.76" />
         <PackageReference Include="Soenneker.Json.OptionsCollection" Version="1.0.129" />
-        <PackageReference Include="Soenneker.Utils.File" Version="1.0.245" />
+        <PackageReference Include="Soenneker.Utils.File" Version="2.0.250" />
     </ItemGroup>
 </Project>
