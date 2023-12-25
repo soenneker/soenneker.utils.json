@@ -8,5 +8,5 @@
 ## Installation
 
 ```
-Install-Package Soenneker.Utils.Json
+dotnet add package Soenneker.Utils.Json
 ```
