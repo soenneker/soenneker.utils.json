@@ -38,7 +38,7 @@
         <None Include="..\icon.png" Pack="true" PackagePath="\" />
         
         <PackageReference Include="Soenneker.Enums.JsonLibrary" Version="2.1.213" />
-        <PackageReference Include="Soenneker.Json.OptionsCollection" Version="2.1.387" />
+        <PackageReference Include="Soenneker.Json.OptionsCollection" Version="2.1.395" />
         <PackageReference Include="Soenneker.Utils.File" Version="2.1.635" />
     </ItemGroup>
 </Project>
