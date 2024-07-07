@@ -2,11 +2,13 @@
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Soenneker.Enums.JsonLibrary;
 using Soenneker.Enums.JsonOptions;
+using Soenneker.Extensions.Task;
 using Soenneker.Json.OptionsCollection;
 using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.Json.Abstract;
@@ -146,28 +148,28 @@ public class JsonUtil : IJsonUtil
     /// <summary>
     /// Serializes the object into the given stream
     /// </summary>
-    public static Task SerializeIntoStream(Stream stream, object? obj, JsonOptionType? optionType = null)
+    public static Task SerializeIntoStream(Stream stream, object? obj, JsonOptionType? optionType = null, CancellationToken cancellationToken = default)
     {
         JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
 
-        return JsonSerializer.SerializeAsync(stream, obj, options);
+        return JsonSerializer.SerializeAsync(stream, obj, options, cancellationToken);
     }
 
-    public async ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null)
+    public async ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
     {
-        string content = await _fileUtil.ReadFile(path);
+        string content = await _fileUtil.ReadFile(path, cancellationToken).NoSync();
         var result = Deserialize<T>(content, libraryType);
         return result;
     }
 
-    public Task SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
+    public Task SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
     {
         if (obj is null)
             return Task.CompletedTask;
 
         string content = Serialize(obj, optionType, libraryType)!;
 
-        return _fileUtil.WriteFile(path, content);
+        return _fileUtil.WriteFile(path, content, cancellationToken);
     }
 
     public bool IsJsonValid(string str)

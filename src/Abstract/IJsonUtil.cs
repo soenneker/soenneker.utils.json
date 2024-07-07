@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.Contracts;
+using System.Threading;
 using System.Threading.Tasks;
 using Soenneker.Enums.JsonLibrary;
 using Soenneker.Enums.JsonOptions;
@@ -12,9 +13,9 @@ namespace Soenneker.Utils.Json.Abstract;
 public interface IJsonUtil
 {
     [Pure]
-    ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null);
+    ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default);
 
-    Task SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null);
+    Task SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default);
 
     [Pure]
     bool IsJsonValid(string str);
