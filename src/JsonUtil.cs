@@ -38,7 +38,7 @@ public class JsonUtil : IJsonUtil
     {
         T? obj;
 
-        if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
+        if (libraryType is null or JsonLibraryType.SystemTextJson)
             obj = JsonSerializer.Deserialize<T>(str, JsonOptionsCollection.WebOptions);
         else
             obj = JsonConvert.DeserializeObject<T>(str, JsonOptionsCollection.Newtonsoft);
@@ -54,7 +54,7 @@ public class JsonUtil : IJsonUtil
     {
         T? obj;
 
-        if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
+        if (libraryType is null or JsonLibraryType.SystemTextJson)
             obj = JsonSerializer.Deserialize<T>(stream, JsonOptionsCollection.WebOptions);
         else
             obj = DeserializeViaNewtonsoft<T>(stream, JsonOptionsCollection.Newtonsoft);
@@ -81,7 +81,7 @@ public class JsonUtil : IJsonUtil
     {
         object? obj;
 
-        if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
+        if (libraryType is null or JsonLibraryType.SystemTextJson)
             obj = JsonSerializer.Deserialize(str, type, JsonOptionsCollection.WebOptions);
         else
             obj = JsonConvert.DeserializeObject(str, JsonOptionsCollection.Newtonsoft);
@@ -97,7 +97,7 @@ public class JsonUtil : IJsonUtil
     {
         object? obj;
 
-        if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
+        if (libraryType is null or JsonLibraryType.SystemTextJson)
             obj = JsonSerializer.Deserialize(stream, type, JsonOptionsCollection.WebOptions);
         else
             obj = DeserializeViaNewtonsoft(stream, JsonOptionsCollection.Newtonsoft);
@@ -117,7 +117,8 @@ public class JsonUtil : IJsonUtil
         JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
 
         string str;
-        if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
+
+        if (libraryType is null or JsonLibraryType.SystemTextJson)
             str = JsonSerializer.Serialize(obj, options);
         else
             str = JsonConvert.SerializeObject(obj, JsonOptionsCollection.Newtonsoft);
@@ -137,7 +138,8 @@ public class JsonUtil : IJsonUtil
         JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
 
         string str;
-        if (libraryType == null || libraryType == JsonLibraryType.SystemTextJson)
+
+        if (libraryType is null or JsonLibraryType.SystemTextJson)
             str = JsonSerializer.Serialize(stream, options);
         else
             str = JsonConvert.SerializeObject(obj, JsonOptionsCollection.Newtonsoft);
