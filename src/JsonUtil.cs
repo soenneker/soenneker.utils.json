@@ -148,11 +148,25 @@ public class JsonUtil : IJsonUtil
     /// <summary>
     /// Serializes the object into the given stream
     /// </summary>
-    public static Task SerializeIntoStream(Stream stream, object? obj, JsonOptionType? optionType = null, CancellationToken cancellationToken = default)
+    public static Task SerializeToStream(Stream stream, object? obj, JsonOptionType? optionType = null, CancellationToken cancellationToken = default)
     {
         JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
 
         return JsonSerializer.SerializeAsync(stream, obj, options, cancellationToken);
+    }
+
+    /// <summary>
+    /// Serializes an object to a UTF-8 encoded byte array using <see cref="System.Text.Json"/>.
+    /// </summary>
+    /// <param name="obj">The object to serialize.</param>
+    /// <param name="optionType"></param>
+    /// <returns>A byte array containing the UTF-8 encoded JSON representation of the object.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the object is <c>null</c>.</exception>
+    public static byte[] SerializeToUtf8Bytes(object obj, JsonOptionType? optionType = null)
+    {
+        JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
+
+        return JsonSerializer.SerializeToUtf8Bytes(obj, options);
     }
 
     public async ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
