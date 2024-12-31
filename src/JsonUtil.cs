@@ -185,7 +185,7 @@ public class JsonUtil : IJsonUtil
 
         string content = Serialize(obj, optionType, libraryType)!;
 
-        return _fileUtil.WriteFile(path, content, cancellationToken);
+        return _fileUtil.Write(path, content, cancellationToken);
     }
 
     public bool IsJsonValid(string str)
