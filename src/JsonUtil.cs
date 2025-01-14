@@ -173,7 +173,7 @@ public class JsonUtil : IJsonUtil
 
     public async ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
     {
-        string content = await _fileUtil.ReadFile(path, cancellationToken).NoSync();
+        string content = await _fileUtil.Read(path, cancellationToken).NoSync();
         var result = Deserialize<T>(content, libraryType);
         return result;
     }
@@ -238,7 +238,7 @@ public class JsonUtil : IJsonUtil
     {
         using (JsonDocument jDoc = JsonDocument.Parse(json))
         {
-            string result = JsonSerializer.Serialize(jDoc, new JsonSerializerOptions { WriteIndented = true });
+            string result = JsonSerializer.Serialize(jDoc, new JsonSerializerOptions {WriteIndented = true});
 
             if (OperatingSystem.IsWindows())
                 return result;
