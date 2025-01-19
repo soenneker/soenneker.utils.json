@@ -202,10 +202,10 @@ public class JsonUtil : IJsonUtil
         return result;
     }
 
-    public Task SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
+    public ValueTask SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
     {
         if (obj is null)
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
 
         string content = Serialize(obj, optionType, libraryType)!;
 
