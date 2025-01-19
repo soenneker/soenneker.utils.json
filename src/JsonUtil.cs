@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Newtonsoft.Json;
 using Soenneker.Enums.JsonLibrary;
 using Soenneker.Enums.JsonOptions;
 using Soenneker.Extensions.Task;
+using Soenneker.Extensions.ValueTask;
 using Soenneker.Json.OptionsCollection;
 using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.Json.Abstract;
@@ -68,9 +70,31 @@ public class JsonUtil : IJsonUtil
     [Pure]
     public static T? Deserialize<T>(Span<byte> byteSpan)
     {
-        var obj = JsonSerializer.Deserialize<T>(byteSpan, JsonOptionsCollection.WebOptions);
+        return JsonSerializer.Deserialize<T>(byteSpan, JsonOptionsCollection.WebOptions);
+    }
 
-        return obj;
+    /// <summary>
+    /// Uses WebOptions as default. Only uses System.Text.Json. Avoids string allocation.
+    /// </summary>
+    [Pure]
+    public static async ValueTask<T?> Deserialize<T>(HttpResponseMessage response, ILogger? logger = null, CancellationToken cancellationToken = default)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            logger?.LogWarning("Response failed with status code {StatusCode}", response.StatusCode);
+            return default;
+        }
+
+        try
+        {
+            await using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).NoSync();
+            return await JsonSerializer.DeserializeAsync<T>(contentStream, JsonOptionsCollection.WebOptions, cancellationToken).NoSync();
+        }
+        catch (Exception e)
+        {
+            logger?.LogError(e, "Failed to deserialize response content");
+            return default;
+        }
     }
 
     /// <summary>
