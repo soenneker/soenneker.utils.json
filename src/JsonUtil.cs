@@ -198,8 +198,7 @@ public class JsonUtil : IJsonUtil
     public async ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
     {
         string content = await _fileUtil.Read(path, cancellationToken).NoSync();
-        var result = Deserialize<T>(content, libraryType);
-        return result;
+        return Deserialize<T>(content, libraryType);
     }
 
     public ValueTask SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
