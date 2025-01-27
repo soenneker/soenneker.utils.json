@@ -74,21 +74,29 @@ public class JsonUtil : IJsonUtil
     }
 
     /// <summary>
-    /// Uses WebOptions as default. Only uses System.Text.Json. Avoids string allocation.
+    /// Uses WebOptions as default. Only uses System.Text.Json. Avoids string allocation. Wraps in a Try catch to log.
     /// </summary>
     [Pure]
     public static async ValueTask<T?> Deserialize<T>(HttpResponseMessage response, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
-        if (!response.IsSuccessStatusCode)
-        {
-            logger?.LogWarning("Response failed with status code {StatusCode}", response.StatusCode);
-            return default;
-        }
-
         try
         {
             await using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).NoSync();
             return await JsonSerializer.DeserializeAsync<T>(contentStream, JsonOptionsCollection.WebOptions, cancellationToken).NoSync();
+        }
+        catch (Exception e)
+        {
+            logger?.LogError(e, "Failed to deserialize response content");
+            return default;
+        }
+    }
+
+    [Pure]
+    public static async ValueTask<T?> Deserialize<T>(Stream stream, ILogger? logger = null, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await JsonSerializer.DeserializeAsync<T>(stream, JsonOptionsCollection.WebOptions, cancellationToken).NoSync();
         }
         catch (Exception e)
         {
@@ -195,20 +203,19 @@ public class JsonUtil : IJsonUtil
         return JsonSerializer.SerializeToUtf8Bytes(obj, options);
     }
 
-    public async ValueTask<T?> ReadJsonFromFile<T>(string path, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
+    public async ValueTask<T?> DeserializeFromFile<T>(string path, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
-        string content = await _fileUtil.Read(path, cancellationToken).NoSync();
-        return Deserialize<T>(content, libraryType);
+        await using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8192, useAsync: true);
+        return await Deserialize<T>(fileStream, logger, cancellationToken).NoSync();
     }
 
-    public ValueTask SerializeAndWriteToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
+    public async ValueTask SerializeToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
     {
         if (obj is null)
-            return ValueTask.CompletedTask;
+            return;
 
-        string content = Serialize(obj, optionType, libraryType)!;
-
-        return _fileUtil.Write(path, content, cancellationToken);
+        await using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 8192, useAsync: true);
+        await SerializeToStream(fileStream, obj, optionType, cancellationToken).NoSync();
     }
 
     public bool IsJsonValid(string str)
