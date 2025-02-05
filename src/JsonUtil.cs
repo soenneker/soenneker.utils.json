@@ -12,7 +12,6 @@ using Soenneker.Enums.JsonOptions;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
 using Soenneker.Json.OptionsCollection;
-using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.Json.Abstract;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -23,13 +22,11 @@ namespace Soenneker.Utils.Json;
 ///<inheritdoc cref="IJsonUtil"/>
 public class JsonUtil : IJsonUtil
 {
-    private readonly IFileUtil _fileUtil;
     private readonly ILogger<JsonUtil> _logger;
 
-    public JsonUtil(IFileUtil fileUtil, ILogger<JsonUtil> logger)
+    public JsonUtil(ILogger<JsonUtil> logger)
     {
         _logger = logger;
-        _fileUtil = fileUtil;
     }
 
     /// <summary>
@@ -91,6 +88,9 @@ public class JsonUtil : IJsonUtil
         }
     }
 
+    /// <summary>
+    /// Uses WebOptions as default. Only uses System.Text.Json. Avoids string allocation. Wraps in a Try catch to log.
+    /// </summary>
     [Pure]
     public static async ValueTask<T?> Deserialize<T>(Stream stream, ILogger? logger = null, CancellationToken cancellationToken = default)
     {

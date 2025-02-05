@@ -36,9 +36,14 @@
         <None Include="..\README.md" Pack="true" PackagePath="\" />
         <None Include="..\LICENSE" Pack="true" PackagePath="\" />
         <None Include="..\icon.png" Pack="true" PackagePath="\" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.1" />
         
         <PackageReference Include="Soenneker.Enums.JsonLibrary" Version="3.0.534" />
+        
+        <PackageReference Include="Soenneker.Extensions.Task" Version="3.0.86" />
+        
+        <PackageReference Include="Soenneker.Extensions.ValueTask" Version="3.0.76" />
         <PackageReference Include="Soenneker.Json.OptionsCollection" Version="3.0.981" />
-        <PackageReference Include="Soenneker.Utils.File" Version="3.0.1697" />
     </ItemGroup>
 </Project>
