@@ -39,7 +39,7 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.1" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.1" />
         
-        <PackageReference Include="Soenneker.Enums.JsonLibrary" Version="3.0.548" />
+        <PackageReference Include="Soenneker.Enums.JsonLibrary" Version="3.0.549" />
         
         <PackageReference Include="Soenneker.Extensions.Task" Version="3.0.86" />
         
