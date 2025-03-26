@@ -12,23 +12,15 @@ using Soenneker.Enums.JsonOptions;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
 using Soenneker.Json.OptionsCollection;
-using Soenneker.Utils.Json.Abstract;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Soenneker.Utils.Json;
 
-// TODO: Build option switch method
-
-///<inheritdoc cref="IJsonUtil"/>
-public class JsonUtil : IJsonUtil
+/// <summary>
+/// A utility library handling (de)serialization and other useful JSON functionalities
+/// </summary>
+public static class JsonUtil
 {
-    private readonly ILogger<JsonUtil> _logger;
-
-    public JsonUtil(ILogger<JsonUtil> logger)
-    {
-        _logger = logger;
-    }
-
     /// <summary>
     /// Uses WebOptions as default
     /// </summary>
@@ -203,13 +195,13 @@ public class JsonUtil : IJsonUtil
         return JsonSerializer.SerializeToUtf8Bytes(obj, options);
     }
 
-    public async ValueTask<T?> DeserializeFromFile<T>(string path, ILogger? logger = null, CancellationToken cancellationToken = default)
+    public static async ValueTask<T?> DeserializeFromFile<T>(string path, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         await using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8192, useAsync: true);
         return await Deserialize<T>(fileStream, logger, cancellationToken).NoSync();
     }
 
-    public async ValueTask SerializeToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
+    public static async ValueTask SerializeToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
     {
         if (obj is null)
             return;
@@ -218,7 +210,7 @@ public class JsonUtil : IJsonUtil
         await SerializeToStream(fileStream, obj, optionType, cancellationToken).NoSync();
     }
 
-    public bool IsJsonValid(string str)
+    public static bool IsJsonValid(string str, ILogger? logger = null)
     {
         var result = false;
         JsonDocument? document = null;
@@ -231,7 +223,7 @@ public class JsonUtil : IJsonUtil
         }
         catch
         {
-            _logger.LogWarning("JSON is invalid");
+            logger.LogWarning("JSON is invalid");
             // ignored
         }
 
