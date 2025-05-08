@@ -43,6 +43,6 @@
         <PackageReference Include="Soenneker.Extensions.Task" Version="3.0.100" />
         
         <PackageReference Include="Soenneker.Extensions.ValueTask" Version="3.0.90" />
-        <PackageReference Include="Soenneker.Json.OptionsCollection" Version="3.0.1199" />
+        <PackageReference Include="Soenneker.Json.OptionsCollection" Version="3.0.1201" />
     </ItemGroup>
 </Project>
