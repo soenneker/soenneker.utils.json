@@ -1,17 +1,18 @@
-﻿using System;
-using System.Diagnostics.Contracts;
-using System.IO;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Soenneker.Enums.JsonLibrary;
 using Soenneker.Enums.JsonOptions;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
 using Soenneker.Json.OptionsCollection;
+using System;
+using System.Diagnostics.Contracts;
+using System.IO;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using System.Threading;
+using System.Threading.Tasks;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Soenneker.Utils.Json;
@@ -210,6 +211,19 @@ public static class JsonUtil
         await SerializeToStream(fileStream, obj, optionType, cancellationToken).NoSync();
     }
 
+    public static bool TryDeserialize<T>(ReadOnlySpan<byte> utf8Json, out T? value, JsonTypeInfo<T>? typeInfo = null)
+    {
+        if (utf8Json.Length == 0)
+        {
+            value = default;
+            return false;
+        }
+
+        value = typeInfo is null ? JsonSerializer.Deserialize<T>(utf8Json) : JsonSerializer.Deserialize(utf8Json, typeInfo);
+
+        return value is not null;
+    }
+
     public static bool IsJsonValid(string str, ILogger? logger = null)
     {
         var result = false;
@@ -223,7 +237,7 @@ public static class JsonUtil
         }
         catch
         {
-            logger.LogWarning("JSON is invalid");
+            logger?.LogWarning("JSON is invalid");
             // ignored
         }
 
@@ -260,7 +274,7 @@ public static class JsonUtil
     {
         using (JsonDocument jDoc = JsonDocument.Parse(json))
         {
-            string result = JsonSerializer.Serialize(jDoc, new JsonSerializerOptions {WriteIndented = true});
+            string result = JsonSerializer.Serialize(jDoc, JsonOptionsCollection.PrettySafeOptions);
 
             if (OperatingSystem.IsWindows())
                 return result;
