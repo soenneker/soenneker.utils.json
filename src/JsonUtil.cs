@@ -151,6 +151,17 @@ public static class JsonUtil
         return str;
     }
 
+    [Pure]
+    public static JsonElement? SerializeToElement(object? obj, JsonOptionType? optionType = null)
+    {
+        if (obj is null)
+            return null;
+
+        JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
+
+        return JsonSerializer.SerializeToElement(obj, options);
+    }
+
     /// <summary>
     /// Serializes the stream input
     /// </summary>
