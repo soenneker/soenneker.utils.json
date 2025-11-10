@@ -30,7 +30,7 @@ public static class JsonUtil
     {
         T? obj;
 
-        if (libraryType is null or JsonLibraryType.SystemTextJson)
+        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
             obj = JsonSerializer.Deserialize<T>(str, JsonOptionsCollection.WebOptions);
         else
             obj = JsonConvert.DeserializeObject<T>(str, JsonOptionsCollection.Newtonsoft);
@@ -46,7 +46,7 @@ public static class JsonUtil
     {
         T? obj;
 
-        if (libraryType is null or JsonLibraryType.SystemTextJson)
+        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
             obj = JsonSerializer.Deserialize<T>(stream, JsonOptionsCollection.WebOptions);
         else
             obj = DeserializeViaNewtonsoft<T>(stream, JsonOptionsCollection.Newtonsoft);
@@ -106,7 +106,7 @@ public static class JsonUtil
     {
         object? obj;
 
-        if (libraryType is null or JsonLibraryType.SystemTextJson)
+        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
             obj = JsonSerializer.Deserialize(str, type, JsonOptionsCollection.WebOptions);
         else
             obj = JsonConvert.DeserializeObject(str, JsonOptionsCollection.Newtonsoft);
@@ -122,7 +122,7 @@ public static class JsonUtil
     {
         object? obj;
 
-        if (libraryType is null or JsonLibraryType.SystemTextJson)
+        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
             obj = JsonSerializer.Deserialize(stream, type, JsonOptionsCollection.WebOptions);
         else
             obj = DeserializeViaNewtonsoft(stream, JsonOptionsCollection.Newtonsoft);
@@ -143,7 +143,7 @@ public static class JsonUtil
 
         string str;
 
-        if (libraryType is null or JsonLibraryType.SystemTextJson)
+        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
             str = JsonSerializer.Serialize(obj, options);
         else
             str = JsonConvert.SerializeObject(obj, JsonOptionsCollection.Newtonsoft);
@@ -175,7 +175,7 @@ public static class JsonUtil
 
         string str;
 
-        if (libraryType is null or JsonLibraryType.SystemTextJson)
+        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
             str = JsonSerializer.Serialize(stream, options);
         else
             str = JsonConvert.SerializeObject(obj, JsonOptionsCollection.Newtonsoft);
