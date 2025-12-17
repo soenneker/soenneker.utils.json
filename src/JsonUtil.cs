@@ -5,14 +5,17 @@ using Soenneker.Enums.JsonOptions;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
 using Soenneker.Json.OptionsCollection;
+using Soenneker.Extensions.String;
 using System;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Soenneker.Utils.Json;
@@ -22,20 +25,24 @@ namespace Soenneker.Utils.Json;
 /// </summary>
 public static class JsonUtil
 {
+    private static readonly Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
+    [Pure]
+    private static JsonSerializerOptions GetOptionsOrWeb(JsonOptionType? optionType) =>
+        optionType is null ? JsonOptionsCollection.WebOptions : JsonOptionsCollection.GetOptionsFromType(optionType);
+
     /// <summary>
     /// Uses WebOptions as default
     /// </summary>
     [Pure]
     public static T? Deserialize<T>(string str, JsonLibraryType? libraryType = null)
     {
-        T? obj;
+        if (string.IsNullOrEmpty(str))
+            return default;
 
-        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
-            obj = JsonSerializer.Deserialize<T>(str, JsonOptionsCollection.WebOptions);
-        else
-            obj = JsonConvert.DeserializeObject<T>(str, JsonOptionsCollection.Newtonsoft);
-
-        return obj;
+        return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
+            ? JsonSerializer.Deserialize<T>(str, JsonOptionsCollection.WebOptions)
+            : JsonConvert.DeserializeObject<T>(str, JsonOptionsCollection.Newtonsoft);
     }
 
     /// <summary>
@@ -44,23 +51,21 @@ public static class JsonUtil
     [Pure]
     public static T? Deserialize<T>(Stream stream, JsonLibraryType? libraryType = null)
     {
-        T? obj;
-
-        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
-            obj = JsonSerializer.Deserialize<T>(stream, JsonOptionsCollection.WebOptions);
-        else
-            obj = DeserializeViaNewtonsoft<T>(stream, JsonOptionsCollection.Newtonsoft);
-
-        return obj;
+        return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
+            ? JsonSerializer.Deserialize<T>(stream, JsonOptionsCollection.WebOptions)
+            : DeserializeViaNewtonsoft<T>(stream, JsonOptionsCollection.Newtonsoft);
     }
 
     /// <summary>
     /// Uses WebOptions as default. Only uses System.Text.Json
     /// </summary>
     [Pure]
-    public static T? Deserialize<T>(Span<byte> byteSpan)
+    public static T? Deserialize<T>(ReadOnlySpan<byte> utf8Json)
     {
-        return JsonSerializer.Deserialize<T>(byteSpan, JsonOptionsCollection.WebOptions);
+        if (utf8Json.Length == 0)
+            return default;
+
+        return JsonSerializer.Deserialize<T>(utf8Json, JsonOptionsCollection.WebOptions);
     }
 
     /// <summary>
@@ -71,8 +76,10 @@ public static class JsonUtil
     {
         try
         {
-            await using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).NoSync();
-            return await JsonSerializer.DeserializeAsync<T>(contentStream, JsonOptionsCollection.WebOptions, cancellationToken).NoSync();
+            await using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken)
+                                                             .NoSync();
+            return await JsonSerializer.DeserializeAsync<T>(contentStream, JsonOptionsCollection.WebOptions, cancellationToken)
+                                       .NoSync();
         }
         catch (Exception e)
         {
@@ -89,7 +96,8 @@ public static class JsonUtil
     {
         try
         {
-            return await JsonSerializer.DeserializeAsync<T>(stream, JsonOptionsCollection.WebOptions, cancellationToken).NoSync();
+            return await JsonSerializer.DeserializeAsync<T>(stream, JsonOptionsCollection.WebOptions, cancellationToken)
+                                       .NoSync();
         }
         catch (Exception e)
         {
@@ -104,14 +112,12 @@ public static class JsonUtil
     [Pure]
     public static object? Deserialize(string str, Type type, JsonLibraryType? libraryType = null)
     {
-        object? obj;
+        if (string.IsNullOrEmpty(str))
+            return null;
 
-        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
-            obj = JsonSerializer.Deserialize(str, type, JsonOptionsCollection.WebOptions);
-        else
-            obj = JsonConvert.DeserializeObject(str, JsonOptionsCollection.Newtonsoft);
-
-        return obj;
+        return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
+            ? JsonSerializer.Deserialize(str, type, JsonOptionsCollection.WebOptions)
+            : JsonConvert.DeserializeObject(str, type, JsonOptionsCollection.Newtonsoft);
     }
 
     /// <summary>
@@ -120,18 +126,13 @@ public static class JsonUtil
     [Pure]
     public static object? Deserialize(Stream stream, Type type, JsonLibraryType? libraryType = null)
     {
-        object? obj;
-
-        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
-            obj = JsonSerializer.Deserialize(stream, type, JsonOptionsCollection.WebOptions);
-        else
-            obj = DeserializeViaNewtonsoft(stream, JsonOptionsCollection.Newtonsoft);
-
-        return obj;
+        return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
+            ? JsonSerializer.Deserialize(stream, type, JsonOptionsCollection.WebOptions)
+            : DeserializeViaNewtonsoft(stream, type, JsonOptionsCollection.Newtonsoft);
     }
 
     /// <summary>
-    /// Accepts a nullable object... if null returns null. If type is left null, will use WebOptions
+    /// Accepts a nullable object... if null returns null. If optionType is left null, will use WebOptions.
     /// </summary>
     [Pure]
     public static string? Serialize(object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
@@ -139,16 +140,11 @@ public static class JsonUtil
         if (obj is null)
             return null;
 
-        JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
+        if (libraryType is not null && libraryType != JsonLibraryType.SystemTextJson)
+            return JsonConvert.SerializeObject(obj, JsonOptionsCollection.Newtonsoft);
 
-        string str;
-
-        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
-            str = JsonSerializer.Serialize(obj, options);
-        else
-            str = JsonConvert.SerializeObject(obj, JsonOptionsCollection.Newtonsoft);
-
-        return str;
+        JsonSerializerOptions options = GetOptionsOrWeb(optionType);
+        return JsonSerializer.Serialize(obj, options);
     }
 
     [Pure]
@@ -157,71 +153,57 @@ public static class JsonUtil
         if (obj is null)
             return null;
 
-        JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
-
+        JsonSerializerOptions options = GetOptionsOrWeb(optionType);
         return JsonSerializer.SerializeToElement(obj, options);
     }
 
     /// <summary>
-    /// Serializes the stream input
+    /// Serializes the object into the given stream (System.Text.Json by default; can use Newtonsoft if specified)
     /// </summary>
-    [Pure]
-    public static string? Serialize(Stream stream, object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
+    public static Task SerializeToStream(Stream stream, object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null,
+        CancellationToken cancellationToken = default)
     {
-        if (obj is null)
-            return null;
+        if (libraryType is not null && libraryType != JsonLibraryType.SystemTextJson)
+        {
+            // Newtonsoft has no async writer; this is sync on the caller thread.
+            SerializeViaNewtonsoft(obj!, stream, JsonOptionsCollection.Newtonsoft);
+            return Task.CompletedTask;
+        }
 
-        JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
-
-        string str;
-
-        if (libraryType is null || libraryType == JsonLibraryType.SystemTextJson)
-            str = JsonSerializer.Serialize(stream, options);
-        else
-            str = JsonConvert.SerializeObject(obj, JsonOptionsCollection.Newtonsoft);
-
-        return str;
-    }
-
-    /// <summary>
-    /// Serializes the object into the given stream
-    /// </summary>
-    public static Task SerializeToStream(Stream stream, object? obj, JsonOptionType? optionType = null, CancellationToken cancellationToken = default)
-    {
-        JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
-
+        JsonSerializerOptions options = GetOptionsOrWeb(optionType);
         return JsonSerializer.SerializeAsync(stream, obj, options, cancellationToken);
     }
 
     /// <summary>
-    /// Serializes an object to a UTF-8 encoded byte array using <see cref="System.Text.Json"/>.
+    /// Serializes an object to a UTF-8 encoded byte array using System.Text.Json.
     /// </summary>
-    /// <param name="obj">The object to serialize.</param>
-    /// <param name="optionType"></param>
-    /// <returns>A byte array containing the UTF-8 encoded JSON representation of the object.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if the object is <c>null</c>.</exception>
     public static byte[] SerializeToUtf8Bytes(object obj, JsonOptionType? optionType = null)
     {
-        JsonSerializerOptions options = JsonOptionsCollection.GetOptionsFromType(optionType);
-
+        JsonSerializerOptions options = GetOptionsOrWeb(optionType);
         return JsonSerializer.SerializeToUtf8Bytes(obj, options);
     }
 
     public static async ValueTask<T?> DeserializeFromFile<T>(string path, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         await using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8192, useAsync: true);
-        return await Deserialize<T>(fileStream, logger, cancellationToken).NoSync();
+        return await Deserialize<T>(fileStream, logger, cancellationToken)
+            .NoSync();
     }
 
-    public static async ValueTask SerializeToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null, CancellationToken cancellationToken = default)
+    public static async ValueTask SerializeToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null,
+        CancellationToken cancellationToken = default)
     {
         if (obj is null)
             return;
 
         await using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 8192, useAsync: true);
-        await SerializeToStream(fileStream, obj, optionType, cancellationToken).NoSync();
+        await SerializeToStream(fileStream, obj, optionType, libraryType, cancellationToken)
+            .NoSync();
     }
 
+    /// <summary>
+    /// True "Try" parse: returns false on invalid JSON. Supports optional source-gen metadata.
+    /// </summary>
     public static bool TryDeserialize<T>(ReadOnlySpan<byte> utf8Json, out T? value, JsonTypeInfo<T>? typeInfo = null)
     {
         if (utf8Json.Length == 0)
@@ -230,70 +212,75 @@ public static class JsonUtil
             return false;
         }
 
-        value = typeInfo is null ? JsonSerializer.Deserialize<T>(utf8Json) : JsonSerializer.Deserialize(utf8Json, typeInfo);
+        try
+        {
+            value = typeInfo is null
+                ? JsonSerializer.Deserialize<T>(utf8Json, JsonOptionsCollection.WebOptions)
+                : JsonSerializer.Deserialize(utf8Json, typeInfo);
 
-        return value is not null;
+            return value is not null;
+        }
+        catch (JsonException)
+        {
+            value = default;
+            return false;
+        }
     }
 
     public static bool IsJsonValid(string str, ILogger? logger = null)
     {
-        var result = false;
-        JsonDocument? document = null;
+        if (str.IsNullOrEmpty())
+        {
+            logger?.LogWarning("JSON is invalid");
+            return false;
+        }
 
         try
         {
-            document = JsonDocument.Parse(str);
-
-            result = true;
+            using JsonDocument _ = JsonDocument.Parse(str);
+            return true;
         }
         catch
         {
             logger?.LogWarning("JSON is invalid");
-            // ignored
+            return false;
         }
-
-        document?.Dispose();
-
-        return result;
     }
 
-    private static void SerializeViaNewtonsoft(object value, Stream stream, JsonSerializerSettings? jsonSerializerSettings)
+    private static void SerializeViaNewtonsoft(object value, Stream stream, JsonSerializerSettings? settings)
     {
-        using var writer = new StreamWriter(stream);
-        using var jsonWriter = new JsonTextWriter(writer);
-        var serializer = Newtonsoft.Json.JsonSerializer.Create(jsonSerializerSettings);
+        using var writer = new StreamWriter(stream, _utf8NoBom, bufferSize: 16 * 1024, leaveOpen: true);
+        using var jsonWriter = new JsonTextWriter(writer) { CloseOutput = false };
+        var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
         serializer.Serialize(jsonWriter, value);
+        jsonWriter.Flush();
     }
 
-    private static T? DeserializeViaNewtonsoft<T>(Stream stream, JsonSerializerSettings? jsonSerializerSettings)
+    private static T? DeserializeViaNewtonsoft<T>(Stream stream, JsonSerializerSettings? settings)
     {
-        using var reader = new StreamReader(stream);
-        using var jsonReader = new JsonTextReader(reader);
-        var serializer = Newtonsoft.Json.JsonSerializer.Create(jsonSerializerSettings);
+        using var reader = new StreamReader(stream, _utf8NoBom, detectEncodingFromByteOrderMarks: true, bufferSize: 16 * 1024, leaveOpen: true);
+        using var jsonReader = new JsonTextReader(reader) { CloseInput = false };
+        var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
         return serializer.Deserialize<T>(jsonReader);
     }
 
-    private static object? DeserializeViaNewtonsoft(Stream stream, JsonSerializerSettings? jsonSerializerSettings)
+    private static object? DeserializeViaNewtonsoft(Stream stream, Type type, JsonSerializerSettings? settings)
     {
-        using var reader = new StreamReader(stream);
-        using var jsonReader = new JsonTextReader(reader);
-        var serializer = Newtonsoft.Json.JsonSerializer.Create(jsonSerializerSettings);
-        return serializer.Deserialize<object?>(jsonReader);
+        using var reader = new StreamReader(stream, _utf8NoBom, detectEncodingFromByteOrderMarks: true, bufferSize: 16 * 1024, leaveOpen: true);
+        using var jsonReader = new JsonTextReader(reader) { CloseInput = false };
+        var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
+        return serializer.Deserialize(jsonReader, type);
     }
 
     public static string Format(string json, bool forceWindowsLineEndings)
     {
-        using (JsonDocument jDoc = JsonDocument.Parse(json))
-        {
-            string result = JsonSerializer.Serialize(jDoc, JsonOptionsCollection.PrettySafeOptions);
+        using JsonDocument doc = JsonDocument.Parse(json);
+        string result = JsonSerializer.Serialize(doc, JsonOptionsCollection.PrettySafeOptions);
 
-            if (OperatingSystem.IsWindows())
-                return result;
-
-            if (forceWindowsLineEndings)
-                result = result.Replace(Environment.NewLine, "\r\n");
-
+        if (!forceWindowsLineEndings || OperatingSystem.IsWindows())
             return result;
-        }
+
+        // avoids alloc if already \r\n
+        return result.IndexOf('\r') >= 0 ? result : result.Replace("\n", "\r\n");
     }
 }
