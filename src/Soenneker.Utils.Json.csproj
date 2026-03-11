@@ -42,7 +42,7 @@
         <PackageReference Include="Soenneker.Enums.JsonLibrary" Version="4.0.701" />
         <PackageReference Include="Soenneker.Extensions.String" Version="4.0.633" />
         <PackageReference Include="Soenneker.Extensions.Task" Version="4.0.116" />
-        <PackageReference Include="Soenneker.Extensions.ValueTask" Version="4.0.108" />
+        <PackageReference Include="Soenneker.Extensions.ValueTask" Version="4.0.109" />
         <PackageReference Include="Soenneker.Json.OptionsCollection" Version="4.0.1243" />
     </ItemGroup>
 </Project>
