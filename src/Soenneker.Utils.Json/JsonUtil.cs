@@ -6,6 +6,8 @@ using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
 using Soenneker.Json.OptionsCollection;
 using Soenneker.Extensions.String;
+using Soenneker.Utils.File.Abstract;
+using Soenneker.Utils.Json.Abstract;
 using System;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -15,17 +17,23 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using Soenneker.Utils.Runtime;
 using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Soenneker.Utils.Json;
 
-/// <summary>
-/// A utility library handling (de)serialization and other useful JSON functionalities
-/// </summary>
-public static class JsonUtil
+///<inheritdoc cref="IJsonUtil"/>
+public sealed class JsonUtil : IJsonUtil
 {
     private static readonly Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
+    private readonly IFileUtil _fileUtil;
+
+    public JsonUtil(IFileUtil fileUtil)
+    {
+        _fileUtil = fileUtil;
+    }
 
     [Pure]
     private static JsonSerializerOptions GetOptionsOrWeb(JsonOptionType? optionType) =>
@@ -277,10 +285,44 @@ public static class JsonUtil
         using JsonDocument doc = JsonDocument.Parse(json);
         string result = JsonSerializer.Serialize(doc, JsonOptionsCollection.PrettySafeOptions);
 
-        if (!forceWindowsLineEndings || OperatingSystem.IsWindows())
+        if (!forceWindowsLineEndings || RuntimeUtil.IsWindows())
             return result;
 
         // avoids alloc if already \r\n
         return result.IndexOf('\r') >= 0 ? result : result.Replace("\n", "\r\n");
+    }
+
+    public async ValueTask WritePretty(string sourcePath, string destinationPath, bool forceWindowsLineEndings, bool log = true,
+        CancellationToken cancellationToken = default)
+    {
+        await using FileStream readStream = _fileUtil.OpenRead(sourcePath, log);
+
+        using JsonDocument doc = await JsonDocument.ParseAsync(readStream, cancellationToken: cancellationToken)
+                                                   .NoSync();
+
+        if (forceWindowsLineEndings && !RuntimeUtil.IsWindows())
+        {
+            string formatted = JsonSerializer.Serialize(doc.RootElement, JsonOptionsCollection.PrettySafeOptions);
+
+            formatted = formatted.Replace("\r\n", "\n")
+                                 .Replace("\r", "\n")
+                                 .Replace("\n", "\r\n");
+
+            await _fileUtil.Write(destinationPath, formatted, log, cancellationToken)
+                           .NoSync();
+            return;
+        }
+
+        await using FileStream writeStream = _fileUtil.OpenWrite(destinationPath, log);
+
+        await using var writer = new Utf8JsonWriter(writeStream, new JsonWriterOptions
+        {
+            Indented = true
+        });
+
+        doc.RootElement.WriteTo(writer);
+
+        await writer.FlushAsync(cancellationToken)
+                    .NoSync();
     }
 }
