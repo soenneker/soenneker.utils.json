@@ -1,11 +1,10 @@
-﻿using AwesomeAssertions;
-using Xunit;
+using AwesomeAssertions;
 
 namespace Soenneker.Utils.Json.Tests;
 
 public class JsonUtilTests
 {
-    [Fact]
+    [Test]
     public void Format_should_indent()
     {
         const string str = "{ \"Test\": \"1\"}";
