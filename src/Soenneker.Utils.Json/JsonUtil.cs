@@ -155,6 +155,12 @@ public sealed class JsonUtil : IJsonUtil
         return JsonSerializer.Serialize(obj, options);
     }
 
+    /// <summary>
+    /// Executes the serialize to element operation.
+    /// </summary>
+    /// <param name="obj">The obj.</param>
+    /// <param name="optionType">The option type.</param>
+    /// <returns>The result of the operation.</returns>
     [Pure]
     public static JsonElement? SerializeToElement(object? obj, JsonOptionType? optionType = null)
     {
@@ -191,6 +197,14 @@ public sealed class JsonUtil : IJsonUtil
         return JsonSerializer.SerializeToUtf8Bytes(obj, options);
     }
 
+    /// <summary>
+    /// Executes the deserialize from file operation.
+    /// </summary>
+    /// <typeparam name="T">The T type.</typeparam>
+    /// <param name="path">The path.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task containing the result of the operation.</returns>
     public static async ValueTask<T?> DeserializeFromFile<T>(string path, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         await using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8192, useAsync: true);
@@ -198,6 +212,15 @@ public sealed class JsonUtil : IJsonUtil
             .NoSync();
     }
 
+    /// <summary>
+    /// Executes the serialize to file operation.
+    /// </summary>
+    /// <param name="obj">The obj.</param>
+    /// <param name="path">The path.</param>
+    /// <param name="optionType">The option type.</param>
+    /// <param name="libraryType">The library type.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public static async ValueTask SerializeToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null,
         CancellationToken cancellationToken = default)
     {
@@ -235,6 +258,12 @@ public sealed class JsonUtil : IJsonUtil
         }
     }
 
+    /// <summary>
+    /// Executes the is json valid operation.
+    /// </summary>
+    /// <param name="str">The str.</param>
+    /// <param name="logger">The logger.</param>
+    /// <returns>A value indicating whether the operation succeeded.</returns>
     public static bool IsJsonValid(string str, ILogger? logger = null)
     {
         if (str.IsNullOrEmpty())
@@ -280,6 +309,12 @@ public sealed class JsonUtil : IJsonUtil
         return serializer.Deserialize(jsonReader, type);
     }
 
+    /// <summary>
+    /// Executes the format operation.
+    /// </summary>
+    /// <param name="json">The json.</param>
+    /// <param name="forceWindowsLineEndings">The force windows line endings.</param>
+    /// <returns>The result of the operation.</returns>
     public static string Format(string json, bool forceWindowsLineEndings)
     {
         using JsonDocument doc = JsonDocument.Parse(json);
