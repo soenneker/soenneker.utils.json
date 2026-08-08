@@ -54,6 +54,19 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
+    /// Deserializes using source-generated metadata, avoiding reflection-based contract discovery.
+    /// </summary>
+    [Pure]
+    public static T? Deserialize<T>(string str, JsonTypeInfo<T> typeInfo)
+    {
+        if (string.IsNullOrEmpty(str))
+            return default;
+
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        return JsonSerializer.Deserialize(str, typeInfo);
+    }
+
+    /// <summary>
     /// Uses WebOptions as default
     /// </summary>
     [Pure]
@@ -62,6 +75,16 @@ public sealed class JsonUtil : IJsonUtil
         return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
             ? JsonSerializer.Deserialize<T>(stream, JsonOptionsCollection.WebOptions)
             : DeserializeViaNewtonsoft<T>(stream, JsonOptionsCollection.Newtonsoft);
+    }
+
+    /// <summary>
+    /// Deserializes a stream using source-generated metadata.
+    /// </summary>
+    [Pure]
+    public static T? Deserialize<T>(Stream stream, JsonTypeInfo<T> typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        return JsonSerializer.Deserialize(stream, typeInfo);
     }
 
     /// <summary>
@@ -74,6 +97,19 @@ public sealed class JsonUtil : IJsonUtil
             return default;
 
         return JsonSerializer.Deserialize<T>(utf8Json, JsonOptionsCollection.WebOptions);
+    }
+
+    /// <summary>
+    /// Deserializes UTF-8 JSON using source-generated metadata.
+    /// </summary>
+    [Pure]
+    public static T? Deserialize<T>(ReadOnlySpan<byte> utf8Json, JsonTypeInfo<T> typeInfo)
+    {
+        if (utf8Json.Length == 0)
+            return default;
+
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        return JsonSerializer.Deserialize(utf8Json, typeInfo);
     }
 
     /// <summary>
@@ -97,6 +133,27 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
+    /// Deserializes response content using source-generated metadata without buffering it as a string.
+    /// </summary>
+    [Pure]
+    public static async ValueTask<T?> Deserialize<T>(HttpResponseMessage response, JsonTypeInfo<T> typeInfo, ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
+        try
+        {
+            await using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).NoSync();
+            return await JsonSerializer.DeserializeAsync(contentStream, typeInfo, cancellationToken).NoSync();
+        }
+        catch (Exception e)
+        {
+            logger?.LogError(e, "Failed to deserialize response content");
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Uses WebOptions as default. Only uses System.Text.Json. Avoids string allocation. Wraps in a Try catch to log.
     /// </summary>
     [Pure]
@@ -106,6 +163,26 @@ public sealed class JsonUtil : IJsonUtil
         {
             return await JsonSerializer.DeserializeAsync<T>(stream, JsonOptionsCollection.WebOptions, cancellationToken)
                                        .NoSync();
+        }
+        catch (Exception e)
+        {
+            logger?.LogError(e, "Failed to deserialize response content");
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously deserializes a stream using source-generated metadata.
+    /// </summary>
+    [Pure]
+    public static async ValueTask<T?> Deserialize<T>(Stream stream, JsonTypeInfo<T> typeInfo, ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
+        try
+        {
+            return await JsonSerializer.DeserializeAsync(stream, typeInfo, cancellationToken).NoSync();
         }
         catch (Exception e)
         {
@@ -156,6 +233,16 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
+    /// Serializes using source-generated metadata.
+    /// </summary>
+    [Pure]
+    public static string Serialize<T>(T obj, JsonTypeInfo<T> typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        return JsonSerializer.Serialize(obj, typeInfo);
+    }
+
+    /// <summary>
     /// Executes the serialize to element operation.
     /// </summary>
     /// <param name="obj">The obj.</param>
@@ -189,12 +276,30 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
+    /// Serializes to a stream using source-generated metadata.
+    /// </summary>
+    public static Task SerializeToStream<T>(Stream stream, T obj, JsonTypeInfo<T> typeInfo, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        return JsonSerializer.SerializeAsync(stream, obj, typeInfo, cancellationToken);
+    }
+
+    /// <summary>
     /// Serializes an object to a UTF-8 encoded byte array using System.Text.Json.
     /// </summary>
     public static byte[] SerializeToUtf8Bytes(object obj, JsonOptionType? optionType = null)
     {
         JsonSerializerOptions options = GetOptionsOrWeb(optionType);
         return JsonSerializer.SerializeToUtf8Bytes(obj, options);
+    }
+
+    /// <summary>
+    /// Serializes to UTF-8 using source-generated metadata.
+    /// </summary>
+    public static byte[] SerializeToUtf8Bytes<T>(T obj, JsonTypeInfo<T> typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        return JsonSerializer.SerializeToUtf8Bytes(obj, typeInfo);
     }
 
     /// <summary>
