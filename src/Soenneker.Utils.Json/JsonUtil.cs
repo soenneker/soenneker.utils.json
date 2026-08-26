@@ -428,8 +428,7 @@ public sealed class JsonUtil : IJsonUtil
         if (!forceWindowsLineEndings || RuntimeUtil.IsWindows())
             return result;
 
-        // avoids alloc if already \r\n
-        return result.IndexOf('\r') >= 0 ? result : result.Replace("\n", "\r\n");
+        return result.ReplaceLineEndings("\r\n");
     }
 
     public async ValueTask WritePretty(string sourcePath, string destinationPath, bool forceWindowsLineEndings, bool log = true,
@@ -444,9 +443,7 @@ public sealed class JsonUtil : IJsonUtil
         {
             string formatted = JsonSerializer.Serialize(doc.RootElement, JsonOptionsCollection.PrettySafeOptions);
 
-            formatted = formatted.Replace("\r\n", "\n")
-                                 .Replace("\r", "\n")
-                                 .Replace("\n", "\r\n");
+            formatted = formatted.ReplaceLineEndings("\r\n");
 
             await _fileUtil.Write(destinationPath, formatted, log, cancellationToken)
                            .NoSync();
