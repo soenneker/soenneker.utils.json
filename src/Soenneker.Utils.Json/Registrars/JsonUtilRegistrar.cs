@@ -13,6 +13,7 @@ public static class JsonUtilRegistrar
     /// <summary>
     /// Adds <see cref="IJsonUtil"/> as a singleton service. <para/>
     /// </summary>
+    /// <returns>Adds <see cref="IJsonUtil"/> as a singleton service. <para/>.</returns>
     public static IServiceCollection AddJsonUtilAsSingleton(this IServiceCollection services)
     {
         services.AddFileUtilAsSingleton()
@@ -24,6 +25,7 @@ public static class JsonUtilRegistrar
     /// <summary>
     /// Adds <see cref="IJsonUtil"/> as a scoped service. <para/>
     /// </summary>
+    /// <returns>Adds <see cref="IJsonUtil"/> as a scoped service. <para/>.</returns>
     public static IServiceCollection AddJsonUtilAsScoped(this IServiceCollection services)
     {
         services.AddFileUtilAsScoped()

@@ -42,6 +42,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Uses WebOptions as default
     /// </summary>
+    /// <returns>Uses WebOptions as default.</returns>
     [Pure]
     public static T? Deserialize<T>(string str, JsonLibraryType? libraryType = null)
     {
@@ -56,6 +57,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Deserializes using source-generated metadata, avoiding reflection-based contract discovery.
     /// </summary>
+    /// <returns>Deserializes using source-generated metadata, avoiding reflection-based contract discovery.</returns>
     [Pure]
     public static T? Deserialize<T>(string str, JsonTypeInfo<T> typeInfo)
     {
@@ -69,6 +71,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Uses WebOptions as default
     /// </summary>
+    /// <returns>Uses WebOptions as default.</returns>
     [Pure]
     public static T? Deserialize<T>(Stream stream, JsonLibraryType? libraryType = null)
     {
@@ -80,6 +83,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Deserializes a stream using source-generated metadata.
     /// </summary>
+    /// <returns>Deserializes a stream using source-generated metadata.</returns>
     [Pure]
     public static T? Deserialize<T>(Stream stream, JsonTypeInfo<T> typeInfo)
     {
@@ -90,6 +94,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Uses WebOptions as default. Only uses System.Text.Json
     /// </summary>
+    /// <returns>Uses WebOptions as default. Only uses System.Text.Json.</returns>
     [Pure]
     public static T? Deserialize<T>(ReadOnlySpan<byte> utf8Json)
     {
@@ -102,6 +107,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Deserializes UTF-8 JSON using source-generated metadata.
     /// </summary>
+    /// <returns>Deserializes UTF-8 JSON using source-generated metadata.</returns>
     [Pure]
     public static T? Deserialize<T>(ReadOnlySpan<byte> utf8Json, JsonTypeInfo<T> typeInfo)
     {
@@ -115,6 +121,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Uses WebOptions as default. Only uses System.Text.Json. Avoids string allocation. Wraps in a Try catch to log.
     /// </summary>
+    /// <returns>Uses WebOptions as default. Only uses System.Text.Json. Avoids string allocation. Wraps in a Try catch to log.</returns>
     [Pure]
     public static async ValueTask<T?> Deserialize<T>(HttpResponseMessage response, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
@@ -135,6 +142,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Deserializes response content using source-generated metadata without buffering it as a string.
     /// </summary>
+    /// <returns>Deserializes response content using source-generated metadata without buffering it as a string.</returns>
     [Pure]
     public static async ValueTask<T?> Deserialize<T>(HttpResponseMessage response, JsonTypeInfo<T> typeInfo, ILogger? logger = null,
         CancellationToken cancellationToken = default)
@@ -156,6 +164,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Uses WebOptions as default. Only uses System.Text.Json. Avoids string allocation. Wraps in a Try catch to log.
     /// </summary>
+    /// <returns>Uses WebOptions as default. Only uses System.Text.Json. Avoids string allocation. Wraps in a Try catch to log.</returns>
     [Pure]
     public static async ValueTask<T?> Deserialize<T>(Stream stream, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
@@ -174,6 +183,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Asynchronously deserializes a stream using source-generated metadata.
     /// </summary>
+    /// <returns>Asynchronously deserializes a stream using source-generated metadata.</returns>
     [Pure]
     public static async ValueTask<T?> Deserialize<T>(Stream stream, JsonTypeInfo<T> typeInfo, ILogger? logger = null,
         CancellationToken cancellationToken = default)
@@ -194,6 +204,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Uses WebOptions as default
     /// </summary>
+    /// <returns>Uses WebOptions as default.</returns>
     [Pure]
     public static object? Deserialize(string str, Type type, JsonLibraryType? libraryType = null)
     {
@@ -208,6 +219,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Uses WebOptions as default
     /// </summary>
+    /// <returns>Uses WebOptions as default.</returns>
     [Pure]
     public static object? Deserialize(Stream stream, Type type, JsonLibraryType? libraryType = null)
     {
@@ -219,6 +231,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Accepts a nullable object... if null returns null. If optionType is left null, will use WebOptions.
     /// </summary>
+    /// <returns>Accepts a nullable object... if null returns null. If optionType is left null, will use WebOptions.</returns>
     [Pure]
     public static string? Serialize(object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
     {
@@ -235,6 +248,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Serializes using source-generated metadata.
     /// </summary>
+    /// <returns>Serializes using source-generated metadata.</returns>
     [Pure]
     public static string Serialize<T>(T obj, JsonTypeInfo<T> typeInfo)
     {
@@ -243,11 +257,11 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
-    /// Executes the serialize to element operation.
+    /// Serializes an object directly to a nullable JSON element using the selected options.
     /// </summary>
-    /// <param name="obj">The obj.</param>
-    /// <param name="optionType">The option type.</param>
-    /// <returns>The result of the operation.</returns>
+    /// <param name="obj">The object to serialize.</param>
+    /// <param name="optionType">The serializer-options profile.</param>
+    /// <returns>The serialized element, or null when no element is produced.</returns>
     [Pure]
     public static JsonElement? SerializeToElement(object? obj, JsonOptionType? optionType = null)
     {
@@ -261,6 +275,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Serializes the object into the given stream (System.Text.Json by default; can use Newtonsoft if specified)
     /// </summary>
+    /// <returns>Serializes the object into the given stream (System.Text.Json by default; can use Newtonsoft if specified).</returns>
     public static Task SerializeToStream(Stream stream, object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null,
         CancellationToken cancellationToken = default)
     {
@@ -278,6 +293,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Serializes to a stream using source-generated metadata.
     /// </summary>
+    /// <returns>Serializes to a stream using source-generated metadata.</returns>
     public static Task SerializeToStream<T>(Stream stream, T obj, JsonTypeInfo<T> typeInfo, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(typeInfo);
@@ -287,6 +303,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Serializes an object to a UTF-8 encoded byte array using System.Text.Json.
     /// </summary>
+    /// <returns>Serializes an object to a UTF-8 encoded byte array using System.Text.Json.</returns>
     public static byte[] SerializeToUtf8Bytes(object obj, JsonOptionType? optionType = null)
     {
         JsonSerializerOptions options = GetOptionsOrWeb(optionType);
@@ -296,6 +313,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// Serializes to UTF-8 using source-generated metadata.
     /// </summary>
+    /// <returns>Serializes to UTF-8 using source-generated metadata.</returns>
     public static byte[] SerializeToUtf8Bytes<T>(T obj, JsonTypeInfo<T> typeInfo)
     {
         ArgumentNullException.ThrowIfNull(typeInfo);
@@ -303,13 +321,13 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
-    /// Executes the deserialize from file operation.
+    /// Reads a JSON file asynchronously and deserializes it to the requested type.
     /// </summary>
-    /// <typeparam name="T">The T type.</typeparam>
-    /// <param name="path">The path.</param>
-    /// <param name="logger">The logger.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task containing the result of the operation.</returns>
+    /// <typeparam name="T">The delegate result type.</typeparam>
+    /// <param name="path">The file-system path.</param>
+    /// <param name="logger">An optional logger for recoverable failures.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
+    /// <returns>The deserialized value, or null for JSON null.</returns>
     public static async ValueTask<T?> DeserializeFromFile<T>(string path, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         await using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8192, useAsync: true);
@@ -318,14 +336,14 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
-    /// Executes the serialize to file operation.
+    /// Serializes an object and writes JSON to a file, creating or replacing the destination.
     /// </summary>
-    /// <param name="obj">The obj.</param>
-    /// <param name="path">The path.</param>
-    /// <param name="optionType">The option type.</param>
-    /// <param name="libraryType">The library type.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="obj">The object to serialize.</param>
+    /// <param name="path">The file-system path.</param>
+    /// <param name="optionType">The serializer-options profile.</param>
+    /// <param name="libraryType">The JSON implementation to use.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
+    /// <returns>An awaitable that completes after writing the file.</returns>
     public static async ValueTask SerializeToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null,
         CancellationToken cancellationToken = default)
     {
@@ -340,6 +358,7 @@ public sealed class JsonUtil : IJsonUtil
     /// <summary>
     /// True "Try" parse: returns false on invalid JSON. Supports optional source-gen metadata.
     /// </summary>
+    /// <returns>True "Try" parse: returns false on invalid JSON. Supports optional source-gen metadata.</returns>
     public static bool TryDeserialize<T>(ReadOnlySpan<byte> utf8Json, out T? value, JsonTypeInfo<T>? typeInfo = null)
     {
         if (utf8Json.Length == 0)
@@ -364,11 +383,11 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
-    /// Executes the is json valid operation.
+    /// Determines whether text contains one complete, syntactically valid JSON value.
     /// </summary>
-    /// <param name="str">The str.</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns>A value indicating whether the operation succeeded.</returns>
+    /// <param name="str">The JSON text.</param>
+    /// <param name="logger">An optional logger for recoverable failures.</param>
+    /// <returns>True only when the complete input is valid JSON.</returns>
     public static bool IsJsonValid(string str, ILogger? logger = null)
     {
         if (str.IsNullOrEmpty())
@@ -415,11 +434,11 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
-    /// Executes the format operation.
+    /// Pretty-prints JSON and optionally normalizes line endings to Windows CRLF.
     /// </summary>
-    /// <param name="json">The json.</param>
-    /// <param name="forceWindowsLineEndings">The force windows line endings.</param>
-    /// <returns>The result of the operation.</returns>
+    /// <param name="json">The JSON text to format.</param>
+    /// <param name="forceWindowsLineEndings">True to emit CRLF line endings.</param>
+    /// <returns>Indented JSON text.</returns>
     public static string Format(string json, bool forceWindowsLineEndings)
     {
         using JsonDocument doc = JsonDocument.Parse(json);

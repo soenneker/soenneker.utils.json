@@ -16,6 +16,7 @@ public interface IJsonUtil
     /// <param name="forceWindowsLineEndings">When <c>true</c>, outputs CRLF line endings on non-Windows systems.</param>
     /// <param name="log">Whether to log the file operations.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>Reads a JSON file, formats it, and writes the result to the destination path.</returns>
     ValueTask WritePretty(string sourcePath, string destinationPath, bool forceWindowsLineEndings, bool log = true,
         CancellationToken cancellationToken = default);
 }
