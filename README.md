@@ -14,24 +14,48 @@ dotnet add package Soenneker.Utils.Json
 
 ## Quick start
 
+Serialization, deserialization, validation, and formatting are static operations on `JsonUtil`:
+
+```csharp
+using Soenneker.Utils.Json;
+
+string? json = JsonUtil.Serialize(new { Id = 42, Name = "example" });
+Document? document = JsonUtil.Deserialize<Document>(json!);
+
+if (!JsonUtil.TryDeserialize<Document>(utf8Json, out Document? parsed))
+{
+    // The input was empty, invalid, or represented JSON null.
+}
+```
+
+The default serializer is `System.Text.Json` with `JsonOptionsCollection.WebOptions`. Pass a
+`JsonLibraryType` to overloads that support Newtonsoft.Json, or a `JsonTypeInfo<T>` to use
+source-generated System.Text.Json metadata.
+
+Register the service only when using the instance-based `WritePretty` file operation:
+
 ```csharp
 using Soenneker.Utils.Json.Registrars;
 
 services.AddJsonUtilAsSingleton();
 ```
 
-Then inject `IJsonUtil` wherever you need it.
+Then inject `IJsonUtil` and call `WritePretty`.
 
 ## Common operations
 
-- `Deserialize()` - Uses WebOptions as default.
-- `Serialize()` - Accepts a nullable object.. if null returns null. If optionType is left null, will use WebOptions.
+- `Deserialize()` - Deserializes strings, UTF-8 data, streams, or HTTP response content. Empty strings and byte spans return the default value.
+- `Serialize()` - Returns `null` for a null object; otherwise uses WebOptions unless another options profile is selected.
 - `SerializeToElement()` - Serializes the value into a nullable `JsonElement` using the requested options.
 - `SerializeToStream()` - Serializes the object into the given stream (System.Text.Json by default; can use Newtonsoft if specified).
 - `SerializeToUtf8Bytes()` - Serializes an object to a UTF-8 encoded byte array using System.Text.Json.
-- `DeserializeFromFile()` - Reads a file asynchronously and deserializes its JSON to `T`; a missing JSON value yields `null`.
-- `SerializeToFile()` - Serializes the value and writes its JSON to the target file asynchronously.
-- `TryDeserialize()` - True "Try" parse: returns false on invalid JSON. Supports optional source-gen metadata.
+- `DeserializeFromFile()` - Reads a file asynchronously and deserializes its JSON to `T`; JSON `null` yields `null`.
+- `SerializeToFile()` - Serializes to a temporary sibling file and replaces the destination only after serialization succeeds. A null object leaves the destination unchanged.
+- `TryDeserialize()` - Returns `false` for empty input, invalid JSON, or a deserialized null value. Supports optional source-generated metadata.
 - `IsJsonValid()` - Returns `true` only when the entire input is syntactically valid JSON; invalid input returns `false` and can be logged.
 - `Format()` - Parses and pretty-prints JSON, optionally forcing Windows CRLF line endings.
 - `WritePretty()` - Reads a JSON file, formats it, and writes the result to the destination path.
+
+The async deserialization overloads that accept a logger return the default value after other
+read or deserialization failures, but requested cancellation is propagated. The stream overloads
+leave caller-owned streams open.

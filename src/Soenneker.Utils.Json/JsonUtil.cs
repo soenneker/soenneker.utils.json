@@ -23,7 +23,6 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Soenneker.Utils.Json;
 
-///<inheritdoc cref="IJsonUtil"/>
 public sealed class JsonUtil : IJsonUtil
 {
     private static readonly Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
@@ -132,6 +131,10 @@ public sealed class JsonUtil : IJsonUtil
             return await JsonSerializer.DeserializeAsync<T>(contentStream, JsonOptionsCollection.WebOptions, cancellationToken)
                                        .NoSync();
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception e)
         {
             logger?.LogError(e, "Failed to deserialize response content");
@@ -154,6 +157,10 @@ public sealed class JsonUtil : IJsonUtil
             await using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).NoSync();
             return await JsonSerializer.DeserializeAsync(contentStream, typeInfo, cancellationToken).NoSync();
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception e)
         {
             logger?.LogError(e, "Failed to deserialize response content");
@@ -172,6 +179,10 @@ public sealed class JsonUtil : IJsonUtil
         {
             return await JsonSerializer.DeserializeAsync<T>(stream, JsonOptionsCollection.WebOptions, cancellationToken)
                                        .NoSync();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception e)
         {
@@ -193,6 +204,10 @@ public sealed class JsonUtil : IJsonUtil
         try
         {
             return await JsonSerializer.DeserializeAsync(stream, typeInfo, cancellationToken).NoSync();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception e)
         {
@@ -350,9 +365,25 @@ public sealed class JsonUtil : IJsonUtil
         if (obj is null)
             return;
 
-        await using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 8192, useAsync: true);
-        await SerializeToStream(fileStream, obj, optionType, libraryType, cancellationToken)
-            .NoSync();
+        string fullPath = Path.GetFullPath(path);
+        string? directory = Path.GetDirectoryName(fullPath);
+        string temporaryPath = Path.Combine(directory!, $".{Path.GetFileName(fullPath)}.{Guid.NewGuid():N}.tmp");
+
+        try
+        {
+            await using (var fileStream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize: 8192,
+                             useAsync: true))
+            {
+                await SerializeToStream(fileStream, obj, optionType, libraryType, cancellationToken).NoSync();
+                await fileStream.FlushAsync(cancellationToken).NoSync();
+            }
+
+            System.IO.File.Move(temporaryPath, fullPath, overwrite: true);
+        }
+        finally
+        {
+            System.IO.File.Delete(temporaryPath);
+        }
     }
 
     /// <summary>
