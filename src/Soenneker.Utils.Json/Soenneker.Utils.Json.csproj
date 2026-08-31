@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <Description>A utility library handling (de)serialization and other useful JSON functionalities</Description>
+        <Description>Serializes, deserializes, validates, formats, and writes JSON with System.Text.Json or Newtonsoft.Json.</Description>
         <Version Condition="'$(BUILD_VERSION)' == ''">4.0.0</Version>
         <Version Condition="'$(BUILD_VERSION)' != ''">$(BUILD_VERSION)</Version>
         <AssemblyName>Soenneker.Utils.Json</AssemblyName>

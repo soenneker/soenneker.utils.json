@@ -4,7 +4,7 @@
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.utils.json/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.utils.json/actions/workflows/codeql.yml)
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Utils.Json
-A utility library handling (de)serialization and other useful JSON functions.
+Serializes, deserializes, validates, formats, and safely writes JSON with System.Text.Json or Newtonsoft.Json.
 
 ## Installation
 
