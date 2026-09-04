@@ -23,6 +23,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Soenneker.Utils.Json;
 
+/// <inheritdoc cref="IJsonUtil" />
 public sealed class JsonUtil : IJsonUtil
 {
     private static readonly Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
