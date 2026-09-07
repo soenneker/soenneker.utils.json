@@ -9,6 +9,7 @@ using Soenneker.Extensions.String;
 using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.Json.Abstract;
 using System;
+using System.Buffers;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Net.Http;
@@ -27,6 +28,7 @@ namespace Soenneker.Utils.Json;
 public sealed class JsonUtil : IJsonUtil
 {
     private static readonly Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+    private static readonly Encoding _strictUtf8 = new UTF8Encoding(false, true);
 
     private readonly IFileUtil _fileUtil;
 
@@ -430,8 +432,25 @@ public sealed class JsonUtil : IJsonUtil
 
         try
         {
-            using JsonDocument _ = JsonDocument.Parse(str);
-            return true;
+            int byteCount = _strictUtf8.GetByteCount(str);
+            byte[]? rented = null;
+            Span<byte> utf8 = byteCount <= 1024 ? stackalloc byte[byteCount] : (rented = ArrayPool<byte>.Shared.Rent(byteCount));
+            try
+            {
+                int written = _strictUtf8.GetBytes(str, utf8);
+                var reader = new Utf8JsonReader(utf8[..written]);
+                bool hasValue = false;
+                while (reader.Read())
+                    hasValue = true;
+                if (!hasValue)
+                    logger?.LogWarning("JSON is invalid");
+                return hasValue;
+            }
+            finally
+            {
+                if (rented is not null)
+                    ArrayPool<byte>.Shared.Return(rented, clearArray: true);
+            }
         }
         catch
         {
