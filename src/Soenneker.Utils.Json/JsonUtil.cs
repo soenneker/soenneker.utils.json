@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Soenneker.Enums.JsonLibrary;
 using Soenneker.Enums.JsonOptions;
@@ -30,6 +30,13 @@ public sealed class JsonUtil : IJsonUtil
     private static readonly Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
     private static readonly Encoding _strictUtf8 = new UTF8Encoding(false, true);
 
+    // Keep the mutable public settings factory isolated from our reusable private profile.
+    // Serializers remain per-operation; JsonConvert.DefaultSettings still applies normally.
+    private static class NewtonsoftSettings
+    {
+        internal static readonly JsonSerializerSettings Value = JsonOptionsCollection.Newtonsoft;
+    }
+
     private readonly IFileUtil _fileUtil;
 
     public JsonUtil(IFileUtil fileUtil)
@@ -53,7 +60,7 @@ public sealed class JsonUtil : IJsonUtil
 
         return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
             ? JsonSerializer.Deserialize<T>(str, JsonOptionsCollection.WebOptions)
-            : JsonConvert.DeserializeObject<T>(str, JsonOptionsCollection.Newtonsoft);
+            : JsonConvert.DeserializeObject<T>(str, NewtonsoftSettings.Value);
     }
 
     /// <summary>
@@ -79,7 +86,7 @@ public sealed class JsonUtil : IJsonUtil
     {
         return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
             ? JsonSerializer.Deserialize<T>(stream, JsonOptionsCollection.WebOptions)
-            : DeserializeViaNewtonsoft<T>(stream, JsonOptionsCollection.Newtonsoft);
+            : DeserializeViaNewtonsoft<T>(stream, NewtonsoftSettings.Value);
     }
 
     /// <summary>
@@ -231,7 +238,7 @@ public sealed class JsonUtil : IJsonUtil
 
         return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
             ? JsonSerializer.Deserialize(str, type, JsonOptionsCollection.WebOptions)
-            : JsonConvert.DeserializeObject(str, type, JsonOptionsCollection.Newtonsoft);
+            : JsonConvert.DeserializeObject(str, type, NewtonsoftSettings.Value);
     }
 
     /// <summary>
@@ -243,7 +250,7 @@ public sealed class JsonUtil : IJsonUtil
     {
         return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
             ? JsonSerializer.Deserialize(stream, type, JsonOptionsCollection.WebOptions)
-            : DeserializeViaNewtonsoft(stream, type, JsonOptionsCollection.Newtonsoft);
+            : DeserializeViaNewtonsoft(stream, type, NewtonsoftSettings.Value);
     }
 
     /// <summary>
@@ -257,7 +264,7 @@ public sealed class JsonUtil : IJsonUtil
             return null;
 
         if (libraryType is not null && libraryType != JsonLibraryType.SystemTextJson)
-            return JsonConvert.SerializeObject(obj, JsonOptionsCollection.Newtonsoft);
+            return JsonConvert.SerializeObject(obj, NewtonsoftSettings.Value);
 
         JsonSerializerOptions options = GetOptionsOrWeb(optionType);
         return JsonSerializer.Serialize(obj, options);
@@ -300,7 +307,7 @@ public sealed class JsonUtil : IJsonUtil
         if (libraryType is not null && libraryType != JsonLibraryType.SystemTextJson)
         {
             // Newtonsoft has no async writer; this is sync on the caller thread.
-            SerializeViaNewtonsoft(obj!, stream, JsonOptionsCollection.Newtonsoft);
+            SerializeViaNewtonsoft(obj!, stream, NewtonsoftSettings.Value);
             return Task.CompletedTask;
         }
 
