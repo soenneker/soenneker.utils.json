@@ -44,7 +44,7 @@
     <ItemGroup>
         <PackageReference Include="Soenneker.Enums.JsonLibrary" Version="4.0.740" />
         <PackageReference Include="Soenneker.Json.OptionsCollection" Version="4.0.1291" />
-        <PackageReference Include="Soenneker.Utils.File" Version="4.0.2285" />
+        <PackageReference Include="Soenneker.Utils.File" Version="4.0.2287" />
         <PackageReference Include="Soenneker.Utils.Runtime" Version="4.0.1118" />
     </ItemGroup>
 </Project>
