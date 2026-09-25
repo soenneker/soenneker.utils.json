@@ -25,7 +25,6 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Soenneker.Utils.Json;
 
-/// <inheritdoc cref="IJsonUtil" />
 public sealed class JsonUtil : IJsonUtil
 {
     private static readonly Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
@@ -54,6 +53,8 @@ public sealed class JsonUtil : IJsonUtil
     /// </summary>
     /// <returns>Uses WebOptions as default.</returns>
     [Pure]
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static T? Deserialize<T>(string str, JsonLibraryType? libraryType = null)
     {
         if (string.IsNullOrEmpty(str))
@@ -83,6 +84,8 @@ public sealed class JsonUtil : IJsonUtil
     /// </summary>
     /// <returns>Uses WebOptions as default.</returns>
     [Pure]
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static T? Deserialize<T>(Stream stream, JsonLibraryType? libraryType = null)
     {
         return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
@@ -106,6 +109,8 @@ public sealed class JsonUtil : IJsonUtil
     /// </summary>
     /// <returns>Uses WebOptions as default. Only uses System.Text.Json.</returns>
     [Pure]
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static T? Deserialize<T>(ReadOnlySpan<byte> utf8Json)
     {
         if (utf8Json.Length == 0)
@@ -133,6 +138,8 @@ public sealed class JsonUtil : IJsonUtil
     /// </summary>
     /// <returns>Uses WebOptions as default. Only uses System.Text.Json. Avoids string allocation. Wraps in a Try catch to log.</returns>
     [Pure]
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static async ValueTask<T?> Deserialize<T>(HttpResponseMessage response, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         try
@@ -184,6 +191,8 @@ public sealed class JsonUtil : IJsonUtil
     /// </summary>
     /// <returns>Uses WebOptions as default. Only uses System.Text.Json. Avoids string allocation. Wraps in a Try catch to log.</returns>
     [Pure]
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static async ValueTask<T?> Deserialize<T>(Stream stream, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         try
@@ -232,6 +241,8 @@ public sealed class JsonUtil : IJsonUtil
     /// </summary>
     /// <returns>Uses WebOptions as default.</returns>
     [Pure]
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static object? Deserialize(string str, Type type, JsonLibraryType? libraryType = null)
     {
         if (string.IsNullOrEmpty(str))
@@ -247,6 +258,8 @@ public sealed class JsonUtil : IJsonUtil
     /// </summary>
     /// <returns>Uses WebOptions as default.</returns>
     [Pure]
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static object? Deserialize(Stream stream, Type type, JsonLibraryType? libraryType = null)
     {
         return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
@@ -259,6 +272,8 @@ public sealed class JsonUtil : IJsonUtil
     /// </summary>
     /// <returns>Accepts a nullable object... if null returns null. If optionType is left null, will use WebOptions.</returns>
     [Pure]
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static string? Serialize(object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
     {
         if (obj is null)
@@ -289,6 +304,8 @@ public sealed class JsonUtil : IJsonUtil
     /// <param name="optionType">The serializer-options profile.</param>
     /// <returns>The serialized element, or null when no element is produced.</returns>
     [Pure]
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static JsonElement? SerializeToElement(object? obj, JsonOptionType? optionType = null)
     {
         if (obj is null)
@@ -302,6 +319,8 @@ public sealed class JsonUtil : IJsonUtil
     /// Serializes the object into the given stream (System.Text.Json by default; can use Newtonsoft if specified)
     /// </summary>
     /// <returns>Serializes the object into the given stream (System.Text.Json by default; can use Newtonsoft if specified).</returns>
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static Task SerializeToStream(Stream stream, object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null,
         CancellationToken cancellationToken = default)
     {
@@ -356,6 +375,8 @@ public sealed class JsonUtil : IJsonUtil
     /// <param name="logger">An optional logger for recoverable failures.</param>
     /// <param name="cancellationToken">Signals that the operation should stop.</param>
     /// <returns>The deserialized value, or null for JSON null.</returns>
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static async ValueTask<T?> DeserializeFromFile<T>(string path, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         await using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8192, useAsync: true);
@@ -372,6 +393,8 @@ public sealed class JsonUtil : IJsonUtil
     /// <param name="libraryType">The JSON implementation to use.</param>
     /// <param name="cancellationToken">Signals that the operation should stop.</param>
     /// <returns>An awaitable that completes after writing the file.</returns>
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     public static async ValueTask SerializeToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null,
         CancellationToken cancellationToken = default)
     {
@@ -400,10 +423,12 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
-    /// True "Try" parse: returns false on invalid JSON. Supports optional source-gen metadata.
+    /// Returns false for empty or invalid JSON using reflection-based deserialization.
     /// </summary>
-    /// <returns>True "Try" parse: returns false on invalid JSON. Supports optional source-gen metadata.</returns>
-    public static bool TryDeserialize<T>(ReadOnlySpan<byte> utf8Json, out T? value, JsonTypeInfo<T>? typeInfo = null)
+    /// <returns>True when a non-null value is deserialized.</returns>
+    [RequiresUnreferencedCode("Reflection-based deserialization may require types that cannot be statically analyzed. Use the JsonTypeInfo overload instead.")]
+    [RequiresDynamicCode("Reflection-based deserialization may require runtime code generation. Use the JsonTypeInfo overload instead.")]
+    public static bool TryDeserialize<T>(ReadOnlySpan<byte> utf8Json, out T? value)
     {
         if (utf8Json.Length == 0)
         {
@@ -413,9 +438,32 @@ public sealed class JsonUtil : IJsonUtil
 
         try
         {
-            value = typeInfo is null
-                ? JsonSerializer.Deserialize<T>(utf8Json, JsonOptionsCollection.WebOptions)
-                : JsonSerializer.Deserialize(utf8Json, typeInfo);
+            value = JsonSerializer.Deserialize<T>(utf8Json, JsonOptionsCollection.WebOptions);
+            return value is not null;
+        }
+        catch (JsonException)
+        {
+            value = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Returns false for empty or invalid JSON using caller-supplied metadata.
+    /// </summary>
+    /// <returns>True when a non-null value is deserialized.</returns>
+    public static bool TryDeserialize<T>(ReadOnlySpan<byte> utf8Json, out T? value, JsonTypeInfo<T> typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        if (utf8Json.Length == 0)
+        {
+            value = default;
+            return false;
+        }
+
+        try
+        {
+            value = JsonSerializer.Deserialize(utf8Json, typeInfo);
 
             return value is not null;
         }
@@ -469,6 +517,8 @@ public sealed class JsonUtil : IJsonUtil
         }
     }
 
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     private static void SerializeViaNewtonsoft(object value, Stream stream, JsonSerializerSettings? settings)
     {
         using var writer = new StreamWriter(stream, _utf8NoBom, bufferSize: 16 * 1024, leaveOpen: true);
@@ -478,6 +528,8 @@ public sealed class JsonUtil : IJsonUtil
         jsonWriter.Flush();
     }
 
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     private static T? DeserializeViaNewtonsoft<T>(Stream stream, JsonSerializerSettings? settings)
     {
         using var reader = new StreamReader(stream, _utf8NoBom, detectEncodingFromByteOrderMarks: true, bufferSize: 16 * 1024, leaveOpen: true);
@@ -486,6 +538,8 @@ public sealed class JsonUtil : IJsonUtil
         return serializer.Deserialize<T>(jsonReader);
     }
 
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
     private static object? DeserializeViaNewtonsoft(Stream stream, Type type, JsonSerializerSettings? settings)
     {
         using var reader = new StreamReader(stream, _utf8NoBom, detectEncodingFromByteOrderMarks: true, bufferSize: 16 * 1024, leaveOpen: true);
@@ -503,7 +557,7 @@ public sealed class JsonUtil : IJsonUtil
     public static string Format(string json, bool forceWindowsLineEndings)
     {
         using JsonDocument doc = JsonDocument.Parse(json);
-        string result = JsonSerializer.Serialize(doc, JsonOptionsCollection.PrettySafeOptions);
+        string result = JsonSerializer.Serialize(doc.RootElement, JsonFormattingContext.Default.JsonElement);
 
         if (!forceWindowsLineEndings || RuntimeUtil.IsWindows())
             return result;
@@ -521,7 +575,7 @@ public sealed class JsonUtil : IJsonUtil
 
         if (forceWindowsLineEndings && !RuntimeUtil.IsWindows())
         {
-            string formatted = JsonSerializer.Serialize(doc.RootElement, JsonOptionsCollection.PrettySafeOptions);
+            string formatted = JsonSerializer.Serialize(doc.RootElement, JsonFormattingContext.Default.JsonElement);
 
             formatted = formatted.ReplaceLineEndings("\r\n");
 
