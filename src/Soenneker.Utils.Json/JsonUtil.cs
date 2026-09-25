@@ -11,6 +11,7 @@ using Soenneker.Utils.Json.Abstract;
 using System;
 using System.Buffers;
 using System.Diagnostics.Contracts;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -326,9 +327,11 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
-    /// Serializes an object to a UTF-8 encoded byte array using System.Text.Json.
+    /// Serializes an object to a UTF-8 encoded byte array using reflection-based System.Text.Json serialization.
     /// </summary>
     /// <returns>Serializes an object to a UTF-8 encoded byte array using System.Text.Json.</returns>
+    [RequiresUnreferencedCode("Reflection-based serialization may require types that cannot be statically analyzed. Use the JsonTypeInfo overload instead.")]
+    [RequiresDynamicCode("Reflection-based serialization may require runtime code generation. Use the JsonTypeInfo overload instead.")]
     public static byte[] SerializeToUtf8Bytes(object obj, JsonOptionType? optionType = null)
     {
         JsonSerializerOptions options = GetOptionsOrWeb(optionType);
