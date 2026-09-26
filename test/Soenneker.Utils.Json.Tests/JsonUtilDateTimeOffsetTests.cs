@@ -1,5 +1,4 @@
 using AwesomeAssertions;
-using Soenneker.Enums.JsonLibrary;
 using System;
 
 namespace Soenneker.Utils.Json.Tests;
@@ -30,29 +29,7 @@ public class JsonUtilDateTimeOffsetTests
         result.Should().Contain("-05:00");
     }
 
-    [Test]
-    public void Serialize_DateTimeOffset_UTC_with_Newtonsoft()
-    {
-        var dateTimeOffset = new DateTimeOffset(2024, 1, 15, 10, 30, 45, TimeSpan.Zero);
-        string? result = JsonUtil.Serialize(dateTimeOffset, libraryType: JsonLibraryType.Newtonsoft);
-        
-        // Newtonsoft.Json serializes DateTimeOffset as ISO 8601 string
-        result.Should().NotBeNull();
-        result!.Should().Contain("2024-01-15T10:30:45");
-        result.Should().Contain("+00:00");
-    }
 
-    [Test]
-    public void Serialize_DateTimeOffset_with_timezone_offset_with_Newtonsoft()
-    {
-        var dateTimeOffset = new DateTimeOffset(2024, 1, 15, 10, 30, 45, TimeSpan.FromHours(3));
-        string? result = JsonUtil.Serialize(dateTimeOffset, libraryType: JsonLibraryType.Newtonsoft);
-        
-        // Newtonsoft.Json serializes DateTimeOffset with timezone offset
-        result.Should().NotBeNull();
-        result!.Should().Contain("2024-01-15T10:30:45");
-        result.Should().Contain("+03:00");
-    }
 
     [Test]
     public void Serialize_DateTimeOffset_in_object_with_SystemTextJson()
@@ -67,18 +44,6 @@ public class JsonUtilDateTimeOffsetTests
         result.Should().Contain("+00:00");
     }
 
-    [Test]
-    public void Serialize_DateTimeOffset_in_object_with_Newtonsoft()
-    {
-        var testObject = new { Date = new DateTimeOffset(2024, 1, 15, 10, 30, 45, TimeSpan.FromHours(-8)) };
-        string? result = JsonUtil.Serialize(testObject, libraryType: JsonLibraryType.Newtonsoft);
-        
-        result.Should().NotBeNull();
-        // Newtonsoft.Json uses PascalCase by default
-        result!.Should().Contain("\"Date\"");
-        result.Should().Contain("2024-01-15T10:30:45");
-        result.Should().Contain("-08:00");
-    }
 
     [Test]
     public void Round_trip_DateTimeOffset_serialization_with_SystemTextJson()
@@ -91,16 +56,6 @@ public class JsonUtilDateTimeOffsetTests
         deserialized.Should().Be(original);
     }
 
-    [Test]
-    public void Round_trip_DateTimeOffset_serialization_with_Newtonsoft()
-    {
-        var original = new DateTimeOffset(2024, 1, 15, 10, 30, 45, 123, TimeSpan.FromHours(-7));
-        string? json = JsonUtil.Serialize(original, libraryType: JsonLibraryType.Newtonsoft);
-        json.Should().NotBeNull();
-        var deserialized = JsonUtil.Deserialize<DateTimeOffset>(json!, libraryType: JsonLibraryType.Newtonsoft);
-        
-        deserialized.Should().Be(original);
-    }
 
     [Test]
     public void Serialize_DateTimeOffset_MinValue()
@@ -189,17 +144,5 @@ public class JsonUtilDateTimeOffsetTests
         fromPlus00.Should().Be(original);
     }
 
-    [Test]
-    public void Serialize_DateTimeOffset_UTC_with_Newtonsoft_uses_plus_00_00_not_Z()
-    {
-        var dateTimeOffset = new DateTimeOffset(2024, 1, 15, 10, 30, 45, TimeSpan.Zero);
-        string? result = JsonUtil.Serialize(dateTimeOffset, libraryType: JsonLibraryType.Newtonsoft);
-        
-        // Newtonsoft.Json also uses "+00:00" for UTC by default, not "Z"
-        result.Should().NotBeNull();
-        result!.Should().Contain("+00:00");
-        result.Should().NotContain("Z");
-        result.Should().NotContain("\"Z\"");
-    }
 }
 

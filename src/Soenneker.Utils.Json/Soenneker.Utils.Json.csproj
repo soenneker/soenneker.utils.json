@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <Description>Serializes, deserializes, validates, formats, and writes JSON with System.Text.Json or Newtonsoft.Json.</Description>
+        <Description>Serializes, deserializes, validates, formats, and writes JSON with System.Text.Json.</Description>
         <Version Condition="'$(BUILD_VERSION)' == ''">4.0.0</Version>
         <Version Condition="'$(BUILD_VERSION)' != ''">$(BUILD_VERSION)</Version>
         <AssemblyName>Soenneker.Utils.Json</AssemblyName>
@@ -43,7 +43,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Soenneker.Enums.JsonLibrary" Version="4.0.740" />
         <PackageReference Include="Soenneker.Json.OptionsCollection" Version="4.0.1292" />
         <PackageReference Include="Soenneker.Utils.File" Version="4.0.2289" />
         <PackageReference Include="Soenneker.Utils.Runtime" Version="4.0.1119" />

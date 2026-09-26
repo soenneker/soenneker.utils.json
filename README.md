@@ -4,7 +4,7 @@
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.utils.json/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.utils.json/actions/workflows/codeql.yml)
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Utils.Json
-Serializes, deserializes, validates, formats, and safely writes JSON with System.Text.Json or Newtonsoft.Json.
+Serializes, deserializes, validates, formats, and safely writes JSON with System.Text.Json.
 
 ## Installation
 
@@ -28,9 +28,8 @@ if (!JsonUtil.TryDeserialize<Document>(utf8Json, out Document? parsed))
 }
 ```
 
-The default serializer is `System.Text.Json` with `JsonOptionsCollection.WebOptions`. Pass a
-`JsonLibraryType` to overloads that support Newtonsoft.Json, or a `JsonTypeInfo<T>` to use
-source-generated System.Text.Json metadata.
+Serialization uses `System.Text.Json` with `JsonOptionsCollection.WebOptions` by default. Pass a
+`JsonTypeInfo<T>` to use source-generated System.Text.Json metadata.
 
 Register the service only when using the instance-based `WritePretty` file operation:
 
@@ -47,7 +46,7 @@ Then inject `IJsonUtil` and call `WritePretty`.
 - `Deserialize()` - Deserializes strings, UTF-8 data, streams, or HTTP response content. Empty strings and byte spans return the default value.
 - `Serialize()` - Returns `null` for a null object; otherwise uses WebOptions unless another options profile is selected.
 - `SerializeToElement()` - Serializes the value into a nullable `JsonElement` using the requested options.
-- `SerializeToStream()` - Serializes the object into the given stream (System.Text.Json by default; can use Newtonsoft if specified).
+- `SerializeToStream()` - Serializes the object into the given stream using System.Text.Json.
 - `SerializeToUtf8Bytes()` - Serializes an object to a UTF-8 encoded byte array using System.Text.Json.
 - `DeserializeFromFile()` - Reads a file asynchronously and deserializes its JSON to `T`; JSON `null` yields `null`.
 - `SerializeToFile()` - Serializes to a temporary sibling file and replaces the destination only after serialization succeeds. A null object leaves the destination unchanged.

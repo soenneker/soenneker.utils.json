@@ -1,6 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Soenneker.Enums.JsonLibrary;
 using Soenneker.Enums.JsonOptions;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
@@ -27,15 +25,7 @@ namespace Soenneker.Utils.Json;
 
 public sealed class JsonUtil : IJsonUtil
 {
-    private static readonly Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
     private static readonly Encoding _strictUtf8 = new UTF8Encoding(false, true);
-
-    // Keep the mutable public settings factory isolated from our reusable private profile.
-    // Serializers remain per-operation; JsonConvert.DefaultSettings still applies normally.
-    private static class NewtonsoftSettings
-    {
-        internal static readonly JsonSerializerSettings Value = JsonOptionsCollection.Newtonsoft;
-    }
 
     private readonly IFileUtil _fileUtil;
 
@@ -55,14 +45,12 @@ public sealed class JsonUtil : IJsonUtil
     [Pure]
     [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
     [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
-    public static T? Deserialize<T>(string str, JsonLibraryType? libraryType = null)
+    public static T? Deserialize<T>(string str)
     {
         if (string.IsNullOrEmpty(str))
             return default;
 
-        return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
-            ? JsonSerializer.Deserialize<T>(str, JsonOptionsCollection.WebOptions)
-            : JsonConvert.DeserializeObject<T>(str, NewtonsoftSettings.Value);
+        return JsonSerializer.Deserialize<T>(str, JsonOptionsCollection.WebOptions);
     }
 
     /// <summary>
@@ -86,11 +74,9 @@ public sealed class JsonUtil : IJsonUtil
     [Pure]
     [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
     [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
-    public static T? Deserialize<T>(Stream stream, JsonLibraryType? libraryType = null)
+    public static T? Deserialize<T>(Stream stream)
     {
-        return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
-            ? JsonSerializer.Deserialize<T>(stream, JsonOptionsCollection.WebOptions)
-            : DeserializeViaNewtonsoft<T>(stream, NewtonsoftSettings.Value);
+        return JsonSerializer.Deserialize<T>(stream, JsonOptionsCollection.WebOptions);
     }
 
     /// <summary>
@@ -243,14 +229,12 @@ public sealed class JsonUtil : IJsonUtil
     [Pure]
     [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
     [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
-    public static object? Deserialize(string str, Type type, JsonLibraryType? libraryType = null)
+    public static object? Deserialize(string str, Type type)
     {
         if (string.IsNullOrEmpty(str))
             return null;
 
-        return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
-            ? JsonSerializer.Deserialize(str, type, JsonOptionsCollection.WebOptions)
-            : JsonConvert.DeserializeObject(str, type, NewtonsoftSettings.Value);
+        return JsonSerializer.Deserialize(str, type, JsonOptionsCollection.WebOptions);
     }
 
     /// <summary>
@@ -260,11 +244,9 @@ public sealed class JsonUtil : IJsonUtil
     [Pure]
     [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
     [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
-    public static object? Deserialize(Stream stream, Type type, JsonLibraryType? libraryType = null)
+    public static object? Deserialize(Stream stream, Type type)
     {
-        return libraryType is null || libraryType == JsonLibraryType.SystemTextJson
-            ? JsonSerializer.Deserialize(stream, type, JsonOptionsCollection.WebOptions)
-            : DeserializeViaNewtonsoft(stream, type, NewtonsoftSettings.Value);
+        return JsonSerializer.Deserialize(stream, type, JsonOptionsCollection.WebOptions);
     }
 
     /// <summary>
@@ -274,13 +256,10 @@ public sealed class JsonUtil : IJsonUtil
     [Pure]
     [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
     [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
-    public static string? Serialize(object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null)
+    public static string? Serialize(object? obj, JsonOptionType? optionType = null)
     {
         if (obj is null)
             return null;
-
-        if (libraryType is not null && libraryType != JsonLibraryType.SystemTextJson)
-            return JsonConvert.SerializeObject(obj, NewtonsoftSettings.Value);
 
         JsonSerializerOptions options = GetOptionsOrWeb(optionType);
         return JsonSerializer.Serialize(obj, options);
@@ -316,21 +295,14 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
-    /// Serializes the object into the given stream (System.Text.Json by default; can use Newtonsoft if specified)
+    /// Serializes the object into the given stream using System.Text.Json
     /// </summary>
-    /// <returns>Serializes the object into the given stream (System.Text.Json by default; can use Newtonsoft if specified).</returns>
+    /// <returns>Serializes the object into the given stream using System.Text.Json.</returns>
     [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
     [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
-    public static Task SerializeToStream(Stream stream, object? obj, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null,
+    public static Task SerializeToStream(Stream stream, object? obj, JsonOptionType? optionType = null,
         CancellationToken cancellationToken = default)
     {
-        if (libraryType is not null && libraryType != JsonLibraryType.SystemTextJson)
-        {
-            // Newtonsoft has no async writer; this is sync on the caller thread.
-            SerializeViaNewtonsoft(obj!, stream, NewtonsoftSettings.Value);
-            return Task.CompletedTask;
-        }
-
         JsonSerializerOptions options = GetOptionsOrWeb(optionType);
         return JsonSerializer.SerializeAsync(stream, obj, options, cancellationToken);
     }
@@ -390,12 +362,11 @@ public sealed class JsonUtil : IJsonUtil
     /// <param name="obj">The object to serialize.</param>
     /// <param name="path">The file-system path.</param>
     /// <param name="optionType">The serializer-options profile.</param>
-    /// <param name="libraryType">The JSON implementation to use.</param>
     /// <param name="cancellationToken">Signals that the operation should stop.</param>
     /// <returns>An awaitable that completes after writing the file.</returns>
     [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
     [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
-    public static async ValueTask SerializeToFile(object? obj, string path, JsonOptionType? optionType = null, JsonLibraryType? libraryType = null,
+    public static async ValueTask SerializeToFile(object? obj, string path, JsonOptionType? optionType = null,
         CancellationToken cancellationToken = default)
     {
         if (obj is null)
@@ -410,7 +381,7 @@ public sealed class JsonUtil : IJsonUtil
             await using (var fileStream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize: 8192,
                              useAsync: true))
             {
-                await SerializeToStream(fileStream, obj, optionType, libraryType, cancellationToken).NoSync();
+                await SerializeToStream(fileStream, obj, optionType, cancellationToken).NoSync();
                 await fileStream.FlushAsync(cancellationToken).NoSync();
             }
 
@@ -515,37 +486,6 @@ public sealed class JsonUtil : IJsonUtil
             logger?.LogWarning("JSON is invalid");
             return false;
         }
-    }
-
-    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
-    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
-    private static void SerializeViaNewtonsoft(object value, Stream stream, JsonSerializerSettings? settings)
-    {
-        using var writer = new StreamWriter(stream, _utf8NoBom, bufferSize: 16 * 1024, leaveOpen: true);
-        using var jsonWriter = new JsonTextWriter(writer) { CloseOutput = false };
-        var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
-        serializer.Serialize(jsonWriter, value);
-        jsonWriter.Flush();
-    }
-
-    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
-    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
-    private static T? DeserializeViaNewtonsoft<T>(Stream stream, JsonSerializerSettings? settings)
-    {
-        using var reader = new StreamReader(stream, _utf8NoBom, detectEncodingFromByteOrderMarks: true, bufferSize: 16 * 1024, leaveOpen: true);
-        using var jsonReader = new JsonTextReader(reader) { CloseInput = false };
-        var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
-        return serializer.Deserialize<T>(jsonReader);
-    }
-
-    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
-    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
-    private static object? DeserializeViaNewtonsoft(Stream stream, Type type, JsonSerializerSettings? settings)
-    {
-        using var reader = new StreamReader(stream, _utf8NoBom, detectEncodingFromByteOrderMarks: true, bufferSize: 16 * 1024, leaveOpen: true);
-        using var jsonReader = new JsonTextReader(reader) { CloseInput = false };
-        var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
-        return serializer.Deserialize(jsonReader, type);
     }
 
     /// <summary>
