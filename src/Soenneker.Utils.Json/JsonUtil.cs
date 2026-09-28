@@ -295,6 +295,20 @@ public sealed class JsonUtil : IJsonUtil
     }
 
     /// <summary>
+    /// Serializes a value directly to a JSON element using caller-supplied metadata.
+    /// </summary>
+    /// <param name="obj">The value to serialize.</param>
+    /// <param name="typeInfo">Source-generated JSON metadata and serialization options for the value.</param>
+    /// <returns>The serialized element, including a JSON null element for a null value.</returns>
+    /// <exception cref="ArgumentNullException">The metadata is null.</exception>
+    [Pure]
+    public static JsonElement SerializeToElement<T>(T obj, JsonTypeInfo<T> typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        return JsonSerializer.SerializeToElement(obj, typeInfo);
+    }
+
+    /// <summary>
     /// Serializes the object into the given stream using System.Text.Json
     /// </summary>
     /// <returns>Serializes the object into the given stream using System.Text.Json.</returns>
