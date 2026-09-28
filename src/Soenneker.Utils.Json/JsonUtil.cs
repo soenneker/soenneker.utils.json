@@ -304,7 +304,6 @@ public sealed class JsonUtil : IJsonUtil
     [Pure]
     public static JsonElement SerializeToElement<T>(T obj, JsonTypeInfo<T> typeInfo)
     {
-        ArgumentNullException.ThrowIfNull(typeInfo);
         return JsonSerializer.SerializeToElement(obj, typeInfo);
     }
 

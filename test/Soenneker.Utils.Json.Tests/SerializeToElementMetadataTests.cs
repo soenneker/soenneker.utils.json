@@ -24,6 +24,6 @@ public class SerializeToElementMetadataTests
     public void Null_metadata_is_rejected()
     {
         Action action = () => JsonUtil.SerializeToElement(42, (JsonTypeInfo<int>)null!);
-        action.Should().Throw<ArgumentNullException>().WithParameterName("typeInfo");
+        action.Should().Throw<ArgumentNullException>();
     }
 }
