@@ -387,7 +387,7 @@ public sealed class JsonUtil : IJsonUtil
 
         string fullPath = Path.GetFullPath(path);
         string? directory = Path.GetDirectoryName(fullPath);
-        string temporaryPath = Path.Combine(directory!, $".{Path.GetFileName(fullPath)}.{Guid.NewGuid():N}.tmp");
+        string temporaryPath = Path.Combine(directory!, $".{Path.GetFileName(fullPath)}.{Guid.NewGuid()}.tmp");
 
         try
         {
@@ -398,7 +398,20 @@ public sealed class JsonUtil : IJsonUtil
                 await fileStream.FlushAsync(cancellationToken).NoSync();
             }
 
-            System.IO.File.Move(temporaryPath, fullPath, overwrite: true);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (System.IO.File.Exists(fullPath))
+                System.IO.File.Replace(temporaryPath, fullPath, destinationBackupFileName: null);
+            else
+            {
+                try
+                {
+                    System.IO.File.Move(temporaryPath, fullPath);
+                }
+                catch (IOException) when (System.IO.File.Exists(fullPath))
+                {
+                    System.IO.File.Replace(temporaryPath, fullPath, destinationBackupFileName: null);
+                }
+            }
         }
         finally
         {
@@ -525,6 +538,8 @@ public sealed class JsonUtil : IJsonUtil
 
         using JsonDocument doc = await JsonDocument.ParseAsync(readStream, cancellationToken: cancellationToken)
                                                    .NoSync();
+        // Release our own source handle before replacing when source and destination are the same file.
+        await readStream.DisposeAsync().NoSync();
 
         if (forceWindowsLineEndings && !RuntimeUtil.IsWindows())
         {
@@ -532,21 +547,16 @@ public sealed class JsonUtil : IJsonUtil
 
             formatted = formatted.ReplaceLineEndings("\r\n");
 
-            await _fileUtil.Write(destinationPath, formatted, log, cancellationToken)
+            await _fileUtil.WriteAtomically(destinationPath, formatted, log, cancellationToken)
                            .NoSync();
             return;
         }
 
-        await using FileStream writeStream = _fileUtil.OpenWrite(destinationPath, log);
-
-        await using var writer = new Utf8JsonWriter(writeStream, new JsonWriterOptions
+        await _fileUtil.WriteAtomically(destinationPath, async (writeStream, token) =>
         {
-            Indented = true
-        });
-
-        doc.RootElement.WriteTo(writer);
-
-        await writer.FlushAsync(cancellationToken)
-                    .NoSync();
+            await using var writer = new Utf8JsonWriter(writeStream, new JsonWriterOptions { Indented = true });
+            doc.RootElement.WriteTo(writer);
+            await writer.FlushAsync(token).NoSync();
+        }, log, cancellationToken).NoSync();
     }
 }
