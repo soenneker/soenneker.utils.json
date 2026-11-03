@@ -8,6 +8,7 @@ using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.Json.Abstract;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -328,6 +329,34 @@ public sealed class JsonUtil : IJsonUtil
     {
         ArgumentNullException.ThrowIfNull(typeInfo);
         return JsonSerializer.SerializeAsync(stream, obj, typeInfo, cancellationToken);
+    }
+
+    /// <summary>Streams asynchronous values as UTF-8 JSON Lines, with one compact value and a trailing LF per line.</summary>
+    /// <param name="stream">The destination stream, which remains open.</param>
+    /// <param name="values">Values to enumerate once without buffering the entire sequence.</param>
+    /// <param name="optionType">The options profile, or null to use WebOptions. Indentation is ignored for JSON Lines.</param>
+    /// <param name="cancellationToken">Cancels enumeration and writing. The destination may contain partial output.</param>
+    /// <returns>A task that completes when all values have been written.</returns>
+    [RequiresUnreferencedCode("Reflection-based JSON serialization may require types that cannot be statically analyzed. Use an overload accepting JsonTypeInfo metadata instead.")]
+    [RequiresDynamicCode("Reflection-based JSON serialization may require runtime code generation. Use an overload accepting JsonTypeInfo metadata instead.")]
+    public static Task SerializeToJsonLines<T>(Stream stream, IAsyncEnumerable<T> values, JsonOptionType? optionType = null,
+        CancellationToken cancellationToken = default)
+    {
+        return JsonSerializer.SerializeAsyncEnumerable(stream, values, topLevelValues: true, options: GetOptionsOrWeb(optionType),
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>Streams asynchronous values as UTF-8 JSON Lines using source-generated metadata.</summary>
+    /// <param name="stream">The destination stream, which remains open.</param>
+    /// <param name="values">Values to enumerate once without buffering the entire sequence.</param>
+    /// <param name="typeInfo">Metadata for each value. Indentation is ignored; every value ends with LF.</param>
+    /// <param name="cancellationToken">Cancels enumeration and writing. The destination may contain partial output.</param>
+    /// <returns>A task that completes when all values have been written.</returns>
+    public static Task SerializeToJsonLines<T>(Stream stream, IAsyncEnumerable<T> values, JsonTypeInfo<T> typeInfo,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        return JsonSerializer.SerializeAsyncEnumerable(stream, values, typeInfo, topLevelValues: true, cancellationToken: cancellationToken);
     }
 
     /// <summary>
